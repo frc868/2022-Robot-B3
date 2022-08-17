@@ -16,8 +16,8 @@ public class TurnToBall extends PIDCommand {
     private final Drivetrain drivetrain;
 
     public TurnToBall(Drivetrain drivetrain, Astra astra) {
-        super(new PIDController(Constants.Drivetrain.TurnToBallPID.kP, Constants.Drivetrain.TurnToBallPID.kI,
-                Constants.Drivetrain.TurnToBallPID.kD), () -> astra.getTx(0), 0, d -> drivetrain.tankDrive(d, -d));
+        super(new PIDController(Constants.Drivetrain.PID.TurnToBall.kP, Constants.Drivetrain.PID.TurnToBall.kI,
+                Constants.Drivetrain.PID.TurnToBall.kD), () -> astra.getTx(0), 0, d -> drivetrain.tankDrive(d, -d));
 
         this.drivetrain = drivetrain;
         getController().setTolerance(0.5);

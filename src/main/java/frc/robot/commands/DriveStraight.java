@@ -21,8 +21,8 @@ public class DriveStraight extends PIDCommand {
      * @param distance The distance to drive
      */
     public DriveStraight(double distance, Drivetrain drivetrain) {
-        super(new PIDController(Constants.Drivetrain.DriveStraightPID.kP, Constants.Drivetrain.DriveStraightPID.kI,
-                Constants.Drivetrain.DriveStraightPID.kD),
+        super(new PIDController(Constants.Drivetrain.PID.DriveStraight.kP, Constants.Drivetrain.PID.DriveStraight.kI,
+                Constants.Drivetrain.PID.DriveStraight.kD),
                 drivetrain::getPosition, distance, d -> drivetrain.tankDrive(d, d),
                 drivetrain);
 

@@ -35,15 +35,15 @@ public class Climber extends SubsystemBase {
      * The double solenoid for the second stage of the climber
      */
     private DoubleSolenoid climberSecondStage = new DoubleSolenoid(PneumaticsModuleType.REVPH,
-            Constants.Climber.Solenoids.CLIMBER_2ND_STAGE_CHANNEL_1,
-            Constants.Climber.Solenoids.CLIMBER_2ND_STAGE_CHANNEL_2);
+            Constants.Climber.Solenoids.CLIMBER_2ND_STAGE[0],
+            Constants.Climber.Solenoids.CLIMBER_2ND_STAGE[1]);
 
     /**
      * The lock for the climber.
      */
     private DoubleSolenoid climberLocks = new DoubleSolenoid(PneumaticsModuleType.REVPH,
-            Constants.Climber.Solenoids.CLIMBER_LOCK_CHANNEL_1,
-            Constants.Climber.Solenoids.CLIMBER_LOCK_CHANNEL_2);
+            Constants.Climber.Solenoids.CLIMBER_LOCK[0],
+            Constants.Climber.Solenoids.CLIMBER_LOCK[1]);
 
     /**
      * The motor controller group containing both of the climber motors.

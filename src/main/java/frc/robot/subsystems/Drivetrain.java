@@ -43,7 +43,8 @@ public class Drivetrain extends SubsystemBase {
     private MotorControllerGroup rightMotors = new MotorControllerGroup(rightPrimaryMotor, rightSecondaryMotor);
     private DifferentialDrive drive = new DifferentialDrive(leftMotors, rightMotors);
     private AHRS navx = new AHRS(SerialPort.Port.kMXP);
-    private DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Constants.Drivetrain.TRACK_WIDTH);
+    private DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(
+            Constants.Drivetrain.Geometry.TRACK_WIDTH_METERS);
     private DifferentialDriveOdometry odometry;
     private Field2d field = new Field2d();
 
@@ -51,8 +52,8 @@ public class Drivetrain extends SubsystemBase {
      * Initializes the drivetrain.
      */
     public Drivetrain() {
-        leftPrimaryMotor.getEncoder().setPositionConversionFactor(Constants.Drivetrain.ENCODER_DISTANCE_PER_PULSE);
-        rightPrimaryMotor.getEncoder().setPositionConversionFactor(Constants.Drivetrain.ENCODER_DISTANCE_PER_PULSE);
+        leftPrimaryMotor.getEncoder().setPositionConversionFactor(Constants.Drivetrain.ENCODER_DISTANCE_TO_METERS);
+        rightPrimaryMotor.getEncoder().setPositionConversionFactor(Constants.Drivetrain.ENCODER_DISTANCE_TO_METERS);
         leftMotors.setInverted(Constants.Drivetrain.IS_LEFT_INVERTED);
         rightMotors.setInverted(Constants.Drivetrain.IS_RIGHT_INVERTED);
         drive.setMaxOutput(0.8);

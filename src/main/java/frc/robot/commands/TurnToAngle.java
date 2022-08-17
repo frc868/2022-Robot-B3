@@ -10,12 +10,12 @@ import frc.robot.Constants;
  * 
  * @author dr
  */
-public class TurnToAngleGyro extends PIDCommand {
+public class TurnToAngle extends PIDCommand {
     private final Drivetrain drivetrain;
 
-    public TurnToAngleGyro(double setpoint, Drivetrain drivetrain) {
-        super(new PIDController(Constants.Drivetrain.TurnToAngleGyroPID.kP, Constants.Drivetrain.TurnToAngleGyroPID.kI,
-                Constants.Drivetrain.TurnToAngleGyroPID.kD), drivetrain::getGyroAngle, setpoint,
+    public TurnToAngle(double setpoint, Drivetrain drivetrain) {
+        super(new PIDController(Constants.Drivetrain.PID.TurnToAngle.kP, Constants.Drivetrain.PID.TurnToAngle.kI,
+                Constants.Drivetrain.PID.TurnToAngle.kD), drivetrain::getGyroAngle, setpoint,
                 d -> drivetrain.tankDrive(d, -d),
                 drivetrain);
         this.drivetrain = drivetrain;

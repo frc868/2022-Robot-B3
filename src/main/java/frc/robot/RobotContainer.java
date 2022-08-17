@@ -123,9 +123,9 @@ public class RobotContainer {
                                 .setKinematics(drivetrain.getKinematics())
                                 .addConstraint(new DifferentialDriveVoltageConstraint(
                                         new SimpleMotorFeedforward(
-                                                Constants.Drivetrain.kS,
-                                                Constants.Drivetrain.kV,
-                                                Constants.Drivetrain.kA),
+                                                Constants.Drivetrain.PID.kS,
+                                                Constants.Drivetrain.PID.kV,
+                                                Constants.Drivetrain.PID.kA),
                                         drivetrain.getKinematics(),
                                         10)));
         SmartDashboard.putData(new DrivetrainRamsete(testTrajectory, drivetrain));

@@ -1,23 +1,20 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
 /**
- * The Constants class provides a convenient place for teams to hold robot-wide
- * numerical or boolean
- * constants. This class should not be used for any other purpose. All constants
- * should be declared
- * globally (i.e. public static). Do not put anything functional in this class.
+ * The container for robot-wide numerical or boolean constants. This should not
+ * be used for any other purpose.
  *
- * <p>
- * It is advised to statically import this class (or one of its inner classes)
- * wherever the
- * constants are needed, to reduce verbosity.
+ * @author dr
  */
 public final class Constants {
+    enum ControllerType {
+        XboxController,
+        FlightStick
+    }
+
     public static final boolean DEBUG_MODE = false;
+
+    public static final ControllerType CONTROLLER_TYPE = ControllerType.XboxController;
 
     public static final class Drivetrain {
         public static final class CANIDs {
@@ -27,37 +24,44 @@ public final class Constants {
             public static final int R_SECONDARY = 3;
         }
 
+        public static final class PID {
+            public static final double kV = 0;
+            public static final double kS = 0;
+            public static final double kA = 0;
+            public static final double kP = 0;
+
+            public static final class DriveStraight {
+                public static final double kP = 1.0;
+                public static final double kI = 0.0;
+                public static final double kD = 0.1;
+            }
+
+            public static final class TurnToAngle {
+                public static final int kP = 1;
+                public static final int kI = 0;
+                public static final int kD = 0;
+            }
+
+            public static final class TurnToBall {
+                public static final int kP = 1;
+                public static final int kI = 0;
+                public static final int kD = 0;
+            }
+
+            public static final class TurnToGoal {
+                public static final int kP = 1;
+                public static final int kI = 0;
+                public static final int kD = 0;
+            }
+        }
+
         public static final boolean IS_LEFT_INVERTED = true;
         public static final boolean IS_RIGHT_INVERTED = false;
-        public static final double ENCODER_DISTANCE_PER_PULSE = 1.0;
-        public static final double TRACK_WIDTH = 0.0;
-        public static final double kV = 0;
-        public static final double kS = 0;
-        public static final double kA = 0;
-        public static final double kP = 0;
+        public static final double ENCODER_DISTANCE_TO_METERS = 1.0;
 
-        public static final class DriveStraightPID {
-            public static final int kP = 1;
-            public static final int kI = 0;
-            public static final int kD = 0;
-        }
-
-        public static final class TurnToAngleGyroPID {
-            public static final int kP = 1;
-            public static final int kI = 0;
-            public static final int kD = 0;
-        }
-
-        public static final class TurnToBallPID {
-            public static final int kP = 1;
-            public static final int kI = 0;
-            public static final int kD = 0;
-        }
-
-        public static final class TurnToGoalPID {
-            public static final int kP = 1;
-            public static final int kI = 0;
-            public static final int kD = 0;
+        public static final class Geometry {
+            /** Distance between centers of right and left wheels on robot. */
+            public static final double TRACK_WIDTH_METERS = 0.5;
         }
     }
 
@@ -68,7 +72,7 @@ public final class Constants {
 
     public static final class Hopper {
         public static final class CANIDs {
-            public static final int MOTOR = 7;
+            public static final int MOTOR = 10;
         }
 
         public static final class Solenoids {
@@ -81,7 +85,7 @@ public final class Constants {
 
     public static final class Intake {
         public static final class CANIDs {
-            public static final int MOTOR = 10;
+            public static final int MOTOR = 11;
         }
 
         public static final class Solenoids {
@@ -94,7 +98,7 @@ public final class Constants {
 
     public static final class Shooter {
         public static final class CANIDs {
-            public static final int PRIMARY = 8;
+            public static final int PRIMARY = 12;
             public static final int SECONDARY = 13;
         }
 
@@ -120,25 +124,28 @@ public final class Constants {
 
     public static final class Climber {
         public static final class CANIDs {
-            public static final int PRIMARY = 12;
-            public static final int SECONDARY = 9;
+            public static final int PRIMARY = 14;
+            public static final int SECONDARY = 15;
         }
 
-        // Inverse logic
         public static final boolean IS_INVERTED = false;
 
         public static final class Solenoids {
-            public static final int CLIMBER_2ND_STAGE_CHANNEL_1 = 2;
-            public static final int CLIMBER_2ND_STAGE_CHANNEL_2 = 5;
-            public static final int CLIMBER_LOCK_CHANNEL_1 = 3;
-            public static final int CLIMBER_LOCK_CHANNEL_2 = 4;
+            public static final int[] CLIMBER_2ND_STAGE = { 2, 5 };
+            public static final int[] CLIMBER_LOCK = { 3, 4 };
 
         }
     }
 
+    public static final class Teleop {
+        public static final double POWER_LIMIT = 0.1;
+    }
+
     public static final class Auton {
-        public static final double MAX_VELOCITY = 5;
-        public static final double MAX_ACCELERATION = 8;
+        public static final double MAX_VELOCITY = 1;
+        public static final double MAX_ACCELERATION = 1;
+        public static final double MAX_ANGULAR_VELOCITY = Math.PI / 4;
+        public static final double MAX_ANGULAR_ACCELERATION = Math.PI;
 
     }
 }
