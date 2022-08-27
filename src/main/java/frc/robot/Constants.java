@@ -1,5 +1,7 @@
 package frc.robot;
 
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+
 /**
  * The container for robot-wide numerical or boolean constants. This should not
  * be used for any other purpose.
@@ -25,10 +27,10 @@ public final class Constants {
         }
 
         public static final class PID {
-            public static final double kV = 0;
-            public static final double kS = 0;
-            public static final double kA = 0;
-            public static final double kP = 0;
+            public static final double kS = 0.10339;
+            public static final double kV = 2.8014;
+            public static final double kA = 0.58458;
+            public static final double kP = 3.849;
 
             public static final class DriveStraight {
                 public static final double kP = 1.0;
@@ -61,7 +63,9 @@ public final class Constants {
 
         public static final class Geometry {
             /** Distance between centers of right and left wheels on robot. */
-            public static final double TRACK_WIDTH_METERS = 0.5;
+            public static final double TRACK_WIDTH_METERS = 0.62;
+            public static final DifferentialDriveKinematics KINEMATICS = new DifferentialDriveKinematics(
+                    Constants.Drivetrain.Geometry.TRACK_WIDTH_METERS);
         }
     }
 
@@ -72,7 +76,7 @@ public final class Constants {
 
     public static final class Hopper {
         public static final class CANIDs {
-            public static final int MOTOR = 10;
+            public static final int MOTOR = 7;
         }
 
         public static final class Solenoids {
@@ -85,7 +89,7 @@ public final class Constants {
 
     public static final class Intake {
         public static final class CANIDs {
-            public static final int MOTOR = 11;
+            public static final int MOTOR = 10;
         }
 
         public static final class Solenoids {
@@ -98,16 +102,16 @@ public final class Constants {
 
     public static final class Shooter {
         public static final class CANIDs {
-            public static final int PRIMARY = 12;
+            public static final int PRIMARY = 8;
             public static final int SECONDARY = 13;
         }
 
-        public static final boolean IS_INVERTED = false;
-        public static final int kP = 1;
-        public static final int kI = 0;
-        public static final int kD = 0;
-        public static final int kS = 0;
-        public static final int kV = 0;
+        public static final double kP = 0.13849;
+        public static final double kI = 0;
+        public static final double kD = 0;
+        public static final double kS = 0.068831;
+        public static final double kV = 0.12277;
+        public static final double kA = 0.010288;
     }
 
     public static final class Limelight {
@@ -124,8 +128,8 @@ public final class Constants {
 
     public static final class Climber {
         public static final class CANIDs {
-            public static final int PRIMARY = 14;
-            public static final int SECONDARY = 15;
+            public static final int PRIMARY = 12;
+            public static final int SECONDARY = 9;
         }
 
         public static final boolean IS_INVERTED = false;
@@ -142,7 +146,7 @@ public final class Constants {
     }
 
     public static final class Auton {
-        public static final double MAX_VELOCITY = 1;
+        public static final double MAX_VELOCITY = 0.2;
         public static final double MAX_ACCELERATION = 1;
         public static final double MAX_ANGULAR_VELOCITY = Math.PI / 4;
         public static final double MAX_ANGULAR_ACCELERATION = Math.PI;
