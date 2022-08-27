@@ -22,9 +22,9 @@ public class LoggingManager {
     private List<Loggable> loggables = new ArrayList<Loggable>();
 
     /**
-     * Returns a singleton of LoggingManager.
+     * Returns the instance of LoggingManager.
      * 
-     * @return a singleton LoggingManager.
+     * @return the instance LoggingManager.
      */
     public static LoggingManager getInstance() {
         if (instance == null) {
@@ -46,7 +46,7 @@ public class LoggingManager {
     }
 
     /**
-     * Adds a group to the LoggingManager. Only use this constructor if the
+     * Adds a group to the LoggingManager. Only use if the
      * subsystem is already defined in the LogGroup.
      * 
      * @param group the LogGroup to add
@@ -67,7 +67,7 @@ public class LoggingManager {
     }
 
     /**
-     * Adds an individual logger to the LoggingManager. Only use this constructor if
+     * Adds an individual logger to the LoggingManager. Only use if
      * the subsystem is already defined in the Logger.
      * 
      * @param logger the Logger to add
