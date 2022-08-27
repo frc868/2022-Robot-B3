@@ -22,7 +22,7 @@ public class DrivetrainRamsete extends RamseteCommand {
                 new RamseteController(),
                 new SimpleMotorFeedforward(Constants.Drivetrain.PID.kS, Constants.Drivetrain.PID.kV,
                         Constants.Drivetrain.PID.kA),
-                drivetrain.getKinematics(),
+                Constants.Drivetrain.Geometry.KINEMATICS,
                 drivetrain::getWheelSpeeds,
                 new PIDController(Constants.Drivetrain.PID.kP, 0, 0),
                 new PIDController(Constants.Drivetrain.PID.kP, 0, 0),
