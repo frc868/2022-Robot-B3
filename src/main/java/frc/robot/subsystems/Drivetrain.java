@@ -4,19 +4,27 @@
 
 package frc.robot.subsystems;
 
+import java.util.List;
+
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.houndutil.houndlog.LogGroup;
 import frc.houndutil.houndlog.LogProfileBuilder;
@@ -25,6 +33,7 @@ import frc.houndutil.houndlog.loggers.DeviceLogger;
 import frc.houndutil.houndlog.loggers.Logger;
 import frc.houndutil.houndlog.loggers.SendableLogger;
 import frc.robot.Constants;
+import frc.robot.commands.DrivetrainRamsete;
 
 /**
  * Drivetrain subsystem, includes all of the motors and the methods with which
@@ -43,8 +52,6 @@ public class Drivetrain extends SubsystemBase {
     private MotorControllerGroup rightMotors = new MotorControllerGroup(rightPrimaryMotor, rightSecondaryMotor);
     private DifferentialDrive drive = new DifferentialDrive(leftMotors, rightMotors);
     private AHRS navx = new AHRS(SerialPort.Port.kMXP);
-    private DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(
-            Constants.Drivetrain.Geometry.TRACK_WIDTH_METERS);
     private DifferentialDriveOdometry odometry;
     private Field2d field = new Field2d();
 
@@ -73,6 +80,27 @@ public class Drivetrain extends SubsystemBase {
                                 LogProfileBuilder.buildNavXLogItems(navx)),
                         new SendableLogger("field", field),
                 }));
+
+        Trajectory testTrajectory = TrajectoryGenerator.generateTrajectory(
+                new Pose2d(0, 0, new Rotation2d(0)),
+                List.of(new Translation2d(0.5, 0)),
+                new Pose2d(1, 0, new Rotation2d(0)),
+                new TrajectoryConfig(
+                        Constants.Auton.MAX_VELOCITY,
+                        Constants.Auton.MAX_ACCELERATION)
+                                .setKinematics(Constants.Drivetrain.Geometry.KINEMATICS)
+                                .addConstraint(new DifferentialDriveVoltageConstraint(
+                                        new SimpleMotorFeedforward(
+                                                Constants.Drivetrain.PID.kS,
+                                                Constants.Drivetrain.PID.kV,
+                                                Constants.Drivetrain.PID.kA),
+                                        Constants.Drivetrain.Geometry.KINEMATICS,
+                                        10)));
+
+        field.getObject("traj").setTrajectory(testTrajectory);
+
+        SmartDashboard.putData(field);
+        SmartDashboard.putData(new DrivetrainRamsete(testTrajectory, this));
     }
 
     /**
@@ -84,6 +112,7 @@ public class Drivetrain extends SubsystemBase {
     public void periodic() {
         odometry.update(Rotation2d.fromDegrees(-getGyroAngle()), getLeftPosition(), getRightPosition());
         field.setRobotPose(odometry.getPoseMeters());
+
     }
 
     /**
@@ -103,13 +132,6 @@ public class Drivetrain extends SubsystemBase {
     public DifferentialDriveWheelSpeeds getWheelSpeeds() {
         return new DifferentialDriveWheelSpeeds(leftPrimaryMotor.getEncoder().getVelocity(),
                 rightPrimaryMotor.getEncoder().getVelocity());
-    }
-
-    /**
-     * Gets the defined kinematics for the drivetrain.
-     */
-    public DifferentialDriveKinematics getKinematics() {
-        return kinematics;
     }
 
     /**

@@ -28,23 +28,23 @@ public class FiveBall extends SequentialCommandGroup {
                 new WaitCommand(0.5), // wait for intake to come down
                 new ParallelRaceGroup( // drive and intake 2nd ball
                         new DriveStraight(0, drivetrain),
-                        new RunCommand(intake::runMotors, intake)),
+                        new RunCommand(intake::runMotor, intake)),
                 new ShootSequence(drivetrain, shooter, limelight, hopper).withTimeout(4), // shoot 1st and 2nd ball
                 new TurnToAngle(150, drivetrain).withTimeout(2), // turn to general location of 3rd ball to
                                                                  // put in camera FOV
                 new TurnToBall(drivetrain, astra).withTimeout(1), // turn to ball precisely with camera
                 new ParallelRaceGroup(
                         new DriveStraight(0, drivetrain),
-                        new RunCommand(intake::runMotors, intake)), // drive and intake 3rd ball
+                        new RunCommand(intake::runMotor, intake)), // drive and intake 3rd ball
                 new TurnToAngle(-25, drivetrain), // turn to goal enough to get in limelight frame
                 new ShootSequence(drivetrain, shooter, limelight, hopper).withTimeout(4), // shoot 3rd ball
                 new TurnToBall(drivetrain, astra).withTimeout(1), // turn to 4th ball
                 new ParallelRaceGroup(
                         new DriveStraight(0, drivetrain),
-                        new RunCommand(intake::runMotors, intake)), // drive and intake 4th ball
+                        new RunCommand(intake::runMotor, intake)), // drive and intake 4th ball
                 new ParallelRaceGroup(
                         new WaitCommand(3),
-                        new RunCommand(intake::runMotors, intake)), // wait for human player to give 5th ball
+                        new RunCommand(intake::runMotor, intake)), // wait for human player to give 5th ball
                 new DriveStraight(-0, drivetrain), // drive back to goal
                 new ShootSequence(drivetrain, shooter, limelight, hopper).withTimeout(4), // shoot 4th and 5th ball
                 new InstantCommand(intake::setUp, intake)); // intake up

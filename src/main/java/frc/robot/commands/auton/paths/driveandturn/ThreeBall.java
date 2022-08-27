@@ -28,13 +28,13 @@ public class ThreeBall extends SequentialCommandGroup {
                 new WaitCommand(1),
                 new ParallelRaceGroup(
                         new DriveStraight(0, drivetrain),
-                        new RunCommand(intake::runMotors, intake)),
+                        new RunCommand(intake::runMotor, intake)),
                 new ShootSequence(drivetrain, shooter, limelight, hopper),
                 new TurnToAngle(150, drivetrain),
                 new TurnToBall(drivetrain, astra),
                 new ParallelRaceGroup(
                         new DriveStraight(0, drivetrain),
-                        new RunCommand(intake::runMotors, intake)),
+                        new RunCommand(intake::runMotor, intake)),
                 new DriveStraight(-0, drivetrain),
                 new ShootSequence(drivetrain, shooter, limelight, hopper),
                 new InstantCommand(intake::setUp, intake));

@@ -22,7 +22,6 @@ public class Intake extends SubsystemBase {
             Constants.Intake.Solenoids.INTAKE_CHANNEL_2);
 
     public Intake() {
-        motor.setInverted(Constants.Intake.IS_INVERTED);
         LoggingManager.getInstance().addGroup("Intake", new LogGroup(
                 new Logger[] {
                         new DeviceLogger<CANSparkMax>(motor, "Motor",
@@ -49,21 +48,21 @@ public class Intake extends SubsystemBase {
     /**
      * Runs the intake motors.
      */
-    public void runMotors() {
+    public void runMotor() {
         motor.set(1);
     }
 
     /**
      * Runs the intake motors in reverse.
      */
-    public void reverseMotors() {
+    public void reverseMotor() {
         motor.set(-1);
     }
 
     /**
      * Stops the intake motors.
      */
-    public void stop() {
+    public void stopMotor() {
         motor.set(0);
     }
 }

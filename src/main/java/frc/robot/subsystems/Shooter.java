@@ -28,7 +28,7 @@ public class Shooter extends PIDSubsystem {
     private CANSparkMax secondaryMotor = new CANSparkMax(Constants.Shooter.CANIDs.SECONDARY,
             MotorType.kBrushless);
     /** The group that controls both shooter motors. */
-    private MotorControllerGroup shooterMotors = new MotorControllerGroup(primaryMotor, secondaryMotor);
+    private MotorControllerGroup motors = new MotorControllerGroup(primaryMotor, secondaryMotor);
 
     /** The feed-forward controller that runs the shooter motors. */
     private SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(Constants.Shooter.kS, Constants.Shooter.kV);
@@ -38,7 +38,8 @@ public class Shooter extends PIDSubsystem {
      */
     public Shooter() {
         super(new PIDController(Constants.Shooter.kP, Constants.Shooter.kI, Constants.Shooter.kD));
-        shooterMotors.setInverted(Constants.Shooter.IS_INVERTED);
+
+        primaryMotor.setInverted(true);
 
         LoggingManager.getInstance().addGroup("Shooter", new LogGroup(
                 new Logger[] {
@@ -76,7 +77,7 @@ public class Shooter extends PIDSubsystem {
      * @param speed the speed of the motors (-1 to 1).
      */
     public void setSpeed(double speed) {
-        shooterMotors.set(speed);
+        motors.set(speed);
     }
 
     /**
@@ -87,7 +88,7 @@ public class Shooter extends PIDSubsystem {
      * @param volts the speed of the motors in volts (-12v to 12v)
      */
     public void setSpeedVolts(double volts) {
-        shooterMotors.setVoltage(volts);
+        motors.setVoltage(volts);
     }
 
     /**

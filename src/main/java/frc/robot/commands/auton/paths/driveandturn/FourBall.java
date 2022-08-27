@@ -28,19 +28,19 @@ public class FourBall extends SequentialCommandGroup {
                 new WaitCommand(1),
                 new ParallelRaceGroup(
                         new DriveStraight(0, drivetrain),
-                        new RunCommand(intake::runMotors, intake)),
+                        new RunCommand(intake::runMotor, intake)),
 
                 new ShootSequence(drivetrain, shooter, limelight, hopper), // 1st and 2nd ball
                 new TurnToAngle(150, drivetrain),
                 new TurnToBall(drivetrain, astra),
                 new ParallelRaceGroup(
                         new DriveStraight(0, drivetrain),
-                        new RunCommand(intake::runMotors, intake)),
+                        new RunCommand(intake::runMotor, intake)),
                 new TurnToAngle(-25, drivetrain),
                 new TurnToBall(drivetrain, astra),
                 new ParallelRaceGroup(
                         new DriveStraight(0, drivetrain),
-                        new RunCommand(intake::runMotors, intake)),
+                        new RunCommand(intake::runMotor, intake)),
                 new DriveStraight(-0, drivetrain), // drive back to goal
                 new ShootSequence(drivetrain, shooter, limelight, hopper), // 3rd and 4th ball
                 new InstantCommand(intake::setUp, intake));

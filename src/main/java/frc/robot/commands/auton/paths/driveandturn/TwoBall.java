@@ -24,7 +24,7 @@ public class TwoBall extends SequentialCommandGroup {
                 new WaitCommand(1),
                 new ParallelRaceGroup(
                         new DriveStraight(0, drivetrain),
-                        new RunCommand(intake::runMotors, intake)),
+                        new RunCommand(intake::runMotor, intake)),
                 new ShootSequence(drivetrain, shooter, limelight, hopper),
                 new InstantCommand(intake::setUp, intake));
 
