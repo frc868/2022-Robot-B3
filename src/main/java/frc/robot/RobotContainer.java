@@ -7,32 +7,22 @@ package frc.robot;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
-
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.TrajectoryUtil;
-import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.houndutil.houndlog.LogGroup;
 import frc.houndutil.houndlog.LoggingManager;
 import frc.houndutil.houndlog.loggers.Logger;
 import frc.houndutil.houndlog.loggers.SendableLogger;
 import frc.robot.Constants.OI;
 import frc.robot.commands.DefaultDrive;
-import frc.robot.commands.DrivetrainRamsete;
 import frc.robot.commands.RunShooter;
+import frc.robot.commands.RunShooterSetSpeed;
 import frc.robot.commands.TurnToBall;
 import frc.robot.commands.TurnToGoal;
 import frc.robot.commands.auton.paths.driveandturn.FiveBall;
@@ -79,7 +69,7 @@ public class RobotContainer {
         LiveWindow.disableAllTelemetry();
         // Configure the button bindings
         drivetrain.setDefaultCommand(
-                new DefaultDrive(drivetrain, driverController::getLeftX, driverController::getRightX));
+                new DefaultDrive(drivetrain, driverController::getLeftY, driverController::getRightY));
         climber.setDefaultCommand(
                 new RunCommand(() -> climber.setSpeed(operatorController.getLeftY()), climber));
         configureButtonBindings();
@@ -101,7 +91,7 @@ public class RobotContainer {
                         new SendableLogger("Run Hopper",
                                 new StartEndCommand(hopper::runMotor, hopper::stopMotor, hopper)),
                         new SendableLogger("Run Intake",
-                                new StartEndCommand(intake::runMotors, intake::stop, intake)),
+                                new StartEndCommand(intake::runMotor, intake::stopMotor, intake)),
                         new SendableLogger("Gatekeepers In",
                                 new InstantCommand(hopper::gatekeepersIn, hopper)),
                         new SendableLogger("Gatekeepers Out",
@@ -111,24 +101,6 @@ public class RobotContainer {
                         new SendableLogger("Turn To Goal", new TurnToGoal(drivetrain, limelight)),
                         new SendableLogger("Turn To Ball", new TurnToBall(drivetrain, astra)),
                 }));
-
-        // Ignore everything here, this is just a test to put on SmartDashboard
-        Trajectory testTrajectory = TrajectoryGenerator.generateTrajectory(
-                new Pose2d(0, 0, new Rotation2d(0)),
-                List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
-                new Pose2d(3, 0, new Rotation2d(0)),
-                new TrajectoryConfig(
-                        Constants.Auton.MAX_VELOCITY,
-                        Constants.Auton.MAX_ACCELERATION)
-                                .setKinematics(drivetrain.getKinematics())
-                                .addConstraint(new DifferentialDriveVoltageConstraint(
-                                        new SimpleMotorFeedforward(
-                                                Constants.Drivetrain.PID.kS,
-                                                Constants.Drivetrain.PID.kV,
-                                                Constants.Drivetrain.PID.kA),
-                                        drivetrain.getKinematics(),
-                                        10)));
-        SmartDashboard.putData(new DrivetrainRamsete(testTrajectory, drivetrain));
     }
 
     private void loadTrajectories() {
@@ -156,10 +128,10 @@ public class RobotContainer {
 
     private void configureButtonBindings() {
         // Driver button A, intake down
-        new JoystickButton(driverController, Button.kA.value)
+        new JoystickButton(driverController, Button.kY.value)
                 .whenPressed(new InstantCommand(intake::setDown, intake));
         // Driver button Y, intake up
-        new JoystickButton(driverController, Button.kY.value)
+        new JoystickButton(driverController, Button.kA.value)
                 .whenPressed(new InstantCommand(intake::setUp, intake));
 
         // Driver button B, climber locks extend
@@ -176,18 +148,22 @@ public class RobotContainer {
         new JoystickButton(driverController, Button.kBack.value)
                 .whenPressed(new InstantCommand(climber::retractSecondStage));
 
-        // Operator button RB, run hopper and intake while held
-        new JoystickButton(operatorController, Button.kRightBumper.value)
-                .whenPressed(
+        // Driver button RB, run hopper and intake while held
+        new JoystickButton(driverController, Button.kRightBumper.value)
+                .whenHeld(
                         new ParallelCommandGroup(
                                 new StartEndCommand(hopper::runMotor, hopper::stopMotor, hopper),
-                                new StartEndCommand(intake::runMotors, intake::stop, intake)));
-        // Operator button A, run hopper and intake in reverse while held
-        new JoystickButton(operatorController, Button.kA.value)
-                .whenPressed(
+                                new StartEndCommand(intake::runMotor, intake::stopMotor, intake)));
+        // Driver button LB, run hopper and intake in reverse while held
+        new JoystickButton(driverController, Button.kLeftBumper.value)
+                .whenHeld(
                         new ParallelCommandGroup(
                                 new StartEndCommand(hopper::reverseMotor, hopper::stopMotor, hopper),
-                                new StartEndCommand(intake::reverseMotors, intake::stop, intake)));
+                                new StartEndCommand(intake::reverseMotor, intake::stopMotor, intake)));
+
+        // Operator button LB, toggle shooter run with limelight regression
+        new POVButton(driverController, 0)
+                .toggleWhenPressed(new RunShooterSetSpeed(2500, shooter));
 
         // Operator button X, gatekeepers out
         new JoystickButton(operatorController, Button.kX.value)
@@ -196,16 +172,12 @@ public class RobotContainer {
         new JoystickButton(operatorController, Button.kB.value)
                 .whenPressed(new InstantCommand(hopper::gatekeepersIn, hopper));
 
-        // Operator button LB, toggle shooter run with limelight regression
-        new JoystickButton(operatorController, Button.kLeftBumper.value)
-                .toggleWhenPressed(new RunShooter(shooter, limelight));
-
-        // Operator D-Pad North, turn to goal
-        new POVButton(operatorController, 0)
-                .whenPressed(new TurnToGoal(drivetrain, limelight));
-        // Operator D-Pad South, turn to ball
-        new POVButton(operatorController, 180)
-                .whenPressed(new TurnToBall(drivetrain, astra));
+        // // Operator D-Pad North, turn to goal
+        // new POVButton(operatorController, 0)
+        // .whenPressed(new TurnToGoal(drivetrain, limelight));
+        // // Operator D-Pad South, turn to ball
+        // new POVButton(operatorController, 180)
+        // .whenPressed(new TurnToBall(drivetrain, astra));
 
     }
 
