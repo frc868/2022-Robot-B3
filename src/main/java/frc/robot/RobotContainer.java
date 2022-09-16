@@ -7,18 +7,30 @@ package frc.robot;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.TrajectoryUtil;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import frc.houndutil.houndlog.LogGroup;
-import frc.houndutil.houndlog.LoggingManager;
-import frc.houndutil.houndlog.loggers.Logger;
-import frc.houndutil.houndlog.loggers.SendableLogger;
+import com.techhounds.houndutil.houndlog.LogGroup;
+import com.techhounds.houndutil.houndlog.LoggingManager;
+import com.techhounds.houndutil.houndlog.loggers.Logger;
+import com.techhounds.houndutil.houndlog.loggers.SendableLogger;
 import frc.robot.Constants.OI;
 import frc.robot.commands.DefaultDrive;
 import frc.robot.commands.RunShooter;
@@ -41,6 +53,8 @@ import frc.robot.subsystems.Shooter;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -55,7 +69,10 @@ public class RobotContainer {
     private final Limelight limelight = new Limelight();
     private final Astra astra = new Astra();
     @SuppressWarnings("unused")
-    private final Misc misc = new Misc();
+    // private final Misc misc = new Misc();
+
+    SlewRateLimiter xLimiter = new SlewRateLimiter(10);
+    SlewRateLimiter yLimiter = new SlewRateLimiter(10);
 
     XboxController driverController = new XboxController(OI.DRIVER_PORT);
     XboxController operatorController = new XboxController(OI.OPERATOR_PORT);
@@ -100,6 +117,7 @@ public class RobotContainer {
                         new SendableLogger("Run Shooter Locked Speed", new RunShooter(shooter, limelight)),
                         new SendableLogger("Turn To Goal", new TurnToGoal(drivetrain, limelight)),
                         new SendableLogger("Turn To Ball", new TurnToBall(drivetrain, astra)),
+                        new SendableLogger("Test", new PrintCommand("hi"))
                 }));
     }
 
@@ -182,6 +200,51 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return chooser.getSelected();
+        // Create a voltage constraint to ensure we don't accelerate too fast
+        var autoVoltageConstraint = new DifferentialDriveVoltageConstraint(
+                new SimpleMotorFeedforward(
+                        Constants.Drivetrain.PID.kS,
+                        Constants.Drivetrain.PID.kV,
+                        Constants.Drivetrain.PID.kA),
+                Constants.Drivetrain.Geometry.KINEMATICS,
+                10);
+
+        // Create config for trajectory
+        TrajectoryConfig config = new TrajectoryConfig(
+                Constants.Auton.MAX_VELOCITY,
+                Constants.Auton.MAX_ACCELERATION)
+                        // Add kinematics to ensure max speed is actually obeyed
+                        .setKinematics(Constants.Drivetrain.Geometry.KINEMATICS)
+                        // Apply the voltage constraint
+                        .addConstraint(autoVoltageConstraint);
+
+        // An example trajectory to follow. All units in meters.
+        Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
+                new Pose2d(0, 0, new Rotation2d(0)),
+                List.of(new Translation2d(0.5, 0)),
+                new Pose2d(1, 0, new Rotation2d(0)),
+                config);
+
+        RamseteCommand ramseteCommand = new RamseteCommand(
+                exampleTrajectory,
+                drivetrain::getPose,
+                new RamseteController(),
+                new SimpleMotorFeedforward(
+                        Constants.Drivetrain.PID.kS,
+                        Constants.Drivetrain.PID.kV,
+                        Constants.Drivetrain.PID.kA),
+                Constants.Drivetrain.Geometry.KINEMATICS,
+                drivetrain::getWheelSpeeds,
+                new PIDController(Constants.Drivetrain.PID.kPVel, 0, 0),
+                new PIDController(Constants.Drivetrain.PID.kPVel, 0, 0),
+                // RamseteCommand passes volts to the callback
+                drivetrain::tankDriveVolts,
+                drivetrain);
+
+        // Reset odometry to the starting pose of the trajectory.
+        drivetrain.resetOdometry(exampleTrajectory.getInitialPose());
+
+        // Run path following command, then stop at the end.
+        return ramseteCommand.andThen(() -> drivetrain.tankDriveVolts(0, 0));
     }
 }

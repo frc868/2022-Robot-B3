@@ -7,13 +7,13 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj2.command.PIDSubsystem;
-import frc.houndutil.houndlog.LogGroup;
-import frc.houndutil.houndlog.LogProfileBuilder;
-import frc.houndutil.houndlog.LoggingManager;
-import frc.houndutil.houndlog.enums.LogType;
-import frc.houndutil.houndlog.loggers.DeviceLogger;
-import frc.houndutil.houndlog.loggers.Logger;
-import frc.houndutil.houndlog.loggers.SingleItemLogger;
+import com.techhounds.houndutil.houndlog.LogGroup;
+import com.techhounds.houndutil.houndlog.LogProfileBuilder;
+import com.techhounds.houndutil.houndlog.LoggingManager;
+import com.techhounds.houndutil.houndlog.enums.LogType;
+import com.techhounds.houndutil.houndlog.loggers.DeviceLogger;
+import com.techhounds.houndutil.houndlog.loggers.Logger;
+import com.techhounds.houndutil.houndlog.loggers.SingleItemLogger;
 import frc.robot.Constants;
 
 /**

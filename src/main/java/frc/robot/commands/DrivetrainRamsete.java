@@ -24,8 +24,8 @@ public class DrivetrainRamsete extends RamseteCommand {
                         Constants.Drivetrain.PID.kA),
                 Constants.Drivetrain.Geometry.KINEMATICS,
                 drivetrain::getWheelSpeeds,
-                new PIDController(Constants.Drivetrain.PID.kP, 0, 0),
-                new PIDController(Constants.Drivetrain.PID.kP, 0, 0),
+                new PIDController(Constants.Drivetrain.PID.kPVel, 0, 0),
+                new PIDController(Constants.Drivetrain.PID.kPVel, 0, 0),
                 drivetrain::tankDriveVolts,
                 drivetrain);
     }

@@ -30,7 +30,7 @@ public final class Constants {
             public static final double kS = 0.10339;
             public static final double kV = 2.8014;
             public static final double kA = 0.58458;
-            public static final double kP = 3.849;
+            public static final double kPVel = 3.849;
 
             public static final class DriveStraight {
                 public static final double kP = 1.0;
@@ -57,13 +57,18 @@ public final class Constants {
             }
         }
 
-        public static final boolean IS_LEFT_INVERTED = true;
+        public static final boolean IS_LEFT_INVERTED = false;
         public static final boolean IS_RIGHT_INVERTED = false;
-        public static final double ENCODER_DISTANCE_TO_METERS = 1.0;
+
+        public static final double ENCODER_DISTANCE_TO_METERS = 1.0 * Math.PI
+                * Constants.Drivetrain.Geometry.WHEEL_DIAMETER_METERS / 8.68; // encoder counts per revolution * (2 * pi
+                                                                              // *
+                                                                              // wheel radius) / gear ratio
 
         public static final class Geometry {
             /** Distance between centers of right and left wheels on robot. */
             public static final double TRACK_WIDTH_METERS = 0.62;
+            public static final double WHEEL_DIAMETER_METERS = 0.14;
             public static final DifferentialDriveKinematics KINEMATICS = new DifferentialDriveKinematics(
                     Constants.Drivetrain.Geometry.TRACK_WIDTH_METERS);
         }
@@ -106,12 +111,12 @@ public final class Constants {
             public static final int SECONDARY = 13;
         }
 
-        public static final double kP = 0.13849;
+        public static final double kP = 0.14257;
         public static final double kI = 0;
         public static final double kD = 0;
-        public static final double kS = 0.068831;
-        public static final double kV = 0.12277;
-        public static final double kA = 0.010288;
+        public static final double kS = 0.055763;
+        public static final double kV = 0.1223;
+        public static final double kA = 0.011442;
     }
 
     public static final class Limelight {

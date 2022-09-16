@@ -26,12 +26,12 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.houndutil.houndlog.LogGroup;
-import frc.houndutil.houndlog.LogProfileBuilder;
-import frc.houndutil.houndlog.LoggingManager;
-import frc.houndutil.houndlog.loggers.DeviceLogger;
-import frc.houndutil.houndlog.loggers.Logger;
-import frc.houndutil.houndlog.loggers.SendableLogger;
+import com.techhounds.houndutil.houndlog.LogGroup;
+import com.techhounds.houndutil.houndlog.LogProfileBuilder;
+import com.techhounds.houndutil.houndlog.LoggingManager;
+import com.techhounds.houndutil.houndlog.loggers.DeviceLogger;
+import com.techhounds.houndutil.houndlog.loggers.Logger;
+import com.techhounds.houndutil.houndlog.loggers.SendableLogger;
 import frc.robot.Constants;
 import frc.robot.commands.DrivetrainRamsete;
 
@@ -50,7 +50,7 @@ public class Drivetrain extends SubsystemBase {
             MotorType.kBrushless);
     private MotorControllerGroup leftMotors = new MotorControllerGroup(leftPrimaryMotor, leftSecondaryMotor);
     private MotorControllerGroup rightMotors = new MotorControllerGroup(rightPrimaryMotor, rightSecondaryMotor);
-    private DifferentialDrive drive = new DifferentialDrive(leftMotors, rightMotors);
+    private DifferentialDrive drive;
     private AHRS navx = new AHRS(SerialPort.Port.kMXP);
     private DifferentialDriveOdometry odometry;
     private Field2d field = new Field2d();
@@ -61,8 +61,11 @@ public class Drivetrain extends SubsystemBase {
     public Drivetrain() {
         leftPrimaryMotor.getEncoder().setPositionConversionFactor(Constants.Drivetrain.ENCODER_DISTANCE_TO_METERS);
         rightPrimaryMotor.getEncoder().setPositionConversionFactor(Constants.Drivetrain.ENCODER_DISTANCE_TO_METERS);
-        leftMotors.setInverted(Constants.Drivetrain.IS_LEFT_INVERTED);
-        rightMotors.setInverted(Constants.Drivetrain.IS_RIGHT_INVERTED);
+        leftPrimaryMotor.getEncoder().setVelocityConversionFactor(Constants.Drivetrain.ENCODER_DISTANCE_TO_METERS / 60);
+        rightPrimaryMotor.getEncoder()
+                .setPositionConversionFactor(Constants.Drivetrain.ENCODER_DISTANCE_TO_METERS / 60);
+        leftMotors.setInverted(true);
+        drive = new DifferentialDrive(leftMotors, rightMotors);
         drive.setMaxOutput(0.8);
         odometry = new DifferentialDriveOdometry(navx.getRotation2d());
 
@@ -78,29 +81,11 @@ public class Drivetrain extends SubsystemBase {
                                 LogProfileBuilder.buildCANSparkMaxLogItems(rightSecondaryMotor)),
                         new DeviceLogger<AHRS>(navx, "NavX",
                                 LogProfileBuilder.buildNavXLogItems(navx)),
-                        new SendableLogger("field", field),
+                        new SendableLogger("NavX", navx),
+                        new SendableLogger("Drive", drive)
+                // new SendableLogger("field", field),
                 }));
 
-        Trajectory testTrajectory = TrajectoryGenerator.generateTrajectory(
-                new Pose2d(0, 0, new Rotation2d(0)),
-                List.of(new Translation2d(0.5, 0)),
-                new Pose2d(1, 0, new Rotation2d(0)),
-                new TrajectoryConfig(
-                        Constants.Auton.MAX_VELOCITY,
-                        Constants.Auton.MAX_ACCELERATION)
-                                .setKinematics(Constants.Drivetrain.Geometry.KINEMATICS)
-                                .addConstraint(new DifferentialDriveVoltageConstraint(
-                                        new SimpleMotorFeedforward(
-                                                Constants.Drivetrain.PID.kS,
-                                                Constants.Drivetrain.PID.kV,
-                                                Constants.Drivetrain.PID.kA),
-                                        Constants.Drivetrain.Geometry.KINEMATICS,
-                                        10)));
-
-        field.getObject("traj").setTrajectory(testTrajectory);
-
-        SmartDashboard.putData(field);
-        SmartDashboard.putData(new DrivetrainRamsete(testTrajectory, this));
     }
 
     /**
@@ -112,7 +97,7 @@ public class Drivetrain extends SubsystemBase {
     public void periodic() {
         odometry.update(Rotation2d.fromDegrees(-getGyroAngle()), getLeftPosition(), getRightPosition());
         field.setRobotPose(odometry.getPoseMeters());
-
+        SmartDashboard.putData(field);
     }
 
     /**
@@ -125,7 +110,7 @@ public class Drivetrain extends SubsystemBase {
     }
 
     /**
-     * Gets the current wheel speeds of the robot.
+     * Gets the current wheel speeds of the robot.g
      * 
      * @return the current wheel speeds
      */
@@ -175,6 +160,7 @@ public class Drivetrain extends SubsystemBase {
      * @param rightVolts the right output
      */
     public void tankDriveVolts(double leftVolts, double rightVolts) {
+        System.out.println(leftVolts + " " + rightVolts);
         leftMotors.setVoltage(leftVolts);
         rightMotors.setVoltage(rightVolts);
         drive.feed();
@@ -237,7 +223,7 @@ public class Drivetrain extends SubsystemBase {
      * Gets the current angle of the gyro.
      */
     public double getGyroAngle() {
-        return navx.getAngle();
+        return -navx.getAngle();
     }
 
     /**
