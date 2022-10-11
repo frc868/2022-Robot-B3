@@ -31,7 +31,6 @@ public class Hopper extends SubsystemBase {
      * Constructs the hopper object.
      */
     public Hopper() {
-        motor.setInverted(Constants.Hopper.IS_INVERTED);
 
         LoggingManager.getInstance().addGroup("Hopper", new LogGroup(
                 new Logger[] {
