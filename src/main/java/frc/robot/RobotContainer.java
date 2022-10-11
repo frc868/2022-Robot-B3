@@ -6,8 +6,8 @@ package frc.robot;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
@@ -15,7 +15,6 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
@@ -27,12 +26,15 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+
+import com.pathplanner.lib.PathPlanner;
 import com.techhounds.houndutil.houndlog.LogGroup;
 import com.techhounds.houndutil.houndlog.LoggingManager;
 import com.techhounds.houndutil.houndlog.loggers.Logger;
 import com.techhounds.houndutil.houndlog.loggers.SendableLogger;
 import frc.robot.Constants.OI;
 import frc.robot.commands.DefaultDrive;
+import frc.robot.commands.DrivetrainRamsete;
 import frc.robot.commands.RunShooter;
 import frc.robot.commands.RunShooterSetSpeed;
 import frc.robot.commands.TurnToBall;
@@ -69,7 +71,7 @@ public class RobotContainer {
     private final Limelight limelight = new Limelight();
     private final Astra astra = new Astra();
     @SuppressWarnings("unused")
-    // private final Misc misc = new Misc();
+    private final Misc misc = new Misc();
 
     SlewRateLimiter xLimiter = new SlewRateLimiter(10);
     SlewRateLimiter yLimiter = new SlewRateLimiter(10);
@@ -122,14 +124,15 @@ public class RobotContainer {
     }
 
     private void loadTrajectories() {
-        for (String path : new String[] { "5Ball.To2", "5Ball.To3", "5Ball.To4and5", "5Ball.ToGoal" }) {
+        for (String name : new String[] { "TestTrajectory", "5Ball.To2", "5Ball.To3", "5Ball.To4and5",
+                "5Ball.ToGoal" }) {
             try {
-                Path trajectoryPath = Filesystem.getDeployDirectory().toPath()
-                        .resolve("pathplanner/generatedJSON/" + path + ".wpilib.json");
-                Trajectory trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
-                trajectories.put(path, trajectory);
-            } catch (IOException ex) {
-                DriverStation.reportError("Unable to open trajectory: " + path, ex.getStackTrace());
+                Trajectory trajectory = PathPlanner.loadPath(name, Constants.Auton.MAX_VELOCITY,
+                        Constants.Auton.MAX_ACCELERATION);
+                trajectories.put(name, trajectory);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                DriverStation.reportError("Unable to open trajectory: " + name, ex.getStackTrace());
             }
         }
 
@@ -142,14 +145,16 @@ public class RobotContainer {
                 new ThreeBall(drivetrain, shooter, intake, hopper, limelight, astra));
         chooser.addOption("Four Ball", new FourBall(drivetrain, shooter, intake, hopper, limelight, astra));
         chooser.addOption("Five Ball", new FiveBall(drivetrain, shooter, intake, hopper, limelight, astra));
+        chooser.addOption("Test Trajectory", new DrivetrainRamsete(trajectories.get("TestTrajectory"), drivetrain));
+        chooser.addOption("Java Traj", createJavaTraj());
     }
 
     private void configureButtonBindings() {
         // Driver button A, intake down
-        new JoystickButton(driverController, Button.kY.value)
+        new JoystickButton(driverController, Button.kA.value)
                 .whenPressed(new InstantCommand(intake::setDown, intake));
         // Driver button Y, intake up
-        new JoystickButton(driverController, Button.kA.value)
+        new JoystickButton(driverController, Button.kY.value)
                 .whenPressed(new InstantCommand(intake::setUp, intake));
 
         // Driver button B, climber locks extend
@@ -180,7 +185,7 @@ public class RobotContainer {
                                 new StartEndCommand(intake::reverseMotor, intake::stopMotor, intake)));
 
         // Operator button LB, toggle shooter run with limelight regression
-        new POVButton(driverController, 0)
+        new JoystickButton(operatorController, Button.kLeftBumper.value)
                 .toggleWhenPressed(new RunShooterSetSpeed(2500, shooter));
 
         // Operator button X, gatekeepers out
@@ -191,16 +196,15 @@ public class RobotContainer {
                 .whenPressed(new InstantCommand(hopper::gatekeepersIn, hopper));
 
         // // Operator D-Pad North, turn to goal
-        // new POVButton(operatorController, 0)
-        // .whenPressed(new TurnToGoal(drivetrain, limelight));
-        // // Operator D-Pad South, turn to ball
-        // new POVButton(operatorController, 180)
-        // .whenPressed(new TurnToBall(drivetrain, astra));
+        new POVButton(operatorController, 0)
+                .whenPressed(new TurnToGoal(drivetrain, limelight));
+        // Operator D-Pad South, turn to ball
+        new POVButton(operatorController, 180)
+                .whenPressed(new TurnToBall(drivetrain, astra));
 
     }
 
-    public Command getAutonomousCommand() {
-        // Create a voltage constraint to ensure we don't accelerate too fast
+    public Command createJavaTraj() {
         var autoVoltageConstraint = new DifferentialDriveVoltageConstraint(
                 new SimpleMotorFeedforward(
                         Constants.Drivetrain.PID.kS,
@@ -221,8 +225,8 @@ public class RobotContainer {
         // An example trajectory to follow. All units in meters.
         Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
                 new Pose2d(0, 0, new Rotation2d(0)),
-                List.of(new Translation2d(0.5, 0)),
-                new Pose2d(1, 0, new Rotation2d(0)),
+                Collections.emptyList(),
+                new Pose2d(1, -1, new Rotation2d(-Math.PI / 2.0)),
                 config);
 
         RamseteCommand ramseteCommand = new RamseteCommand(
@@ -237,7 +241,6 @@ public class RobotContainer {
                 drivetrain::getWheelSpeeds,
                 new PIDController(Constants.Drivetrain.PID.kPVel, 0, 0),
                 new PIDController(Constants.Drivetrain.PID.kPVel, 0, 0),
-                // RamseteCommand passes volts to the callback
                 drivetrain::tankDriveVolts,
                 drivetrain);
 
@@ -246,5 +249,9 @@ public class RobotContainer {
 
         // Run path following command, then stop at the end.
         return ramseteCommand.andThen(() -> drivetrain.tankDriveVolts(0, 0));
+    }
+
+    public Command getAutonomousCommand() {
+        return chooser.getSelected();
     }
 }
