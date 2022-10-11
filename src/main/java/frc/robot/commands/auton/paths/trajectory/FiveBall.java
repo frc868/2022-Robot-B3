@@ -27,11 +27,11 @@ public class FiveBall extends SequentialCommandGroup {
             Astra astra) {
         addCommands(
                 new InstantCommand(intake::setDown, intake), // intake down
-                new ShootSequence(drivetrain, shooter, limelight, hopper).withTimeout(4), // shoot 1st ball
+                new ShootSequence(drivetrain, shooter, limelight, hopper).withTimeout(3), // shoot 1st ball
                 new ParallelRaceGroup( // drive and intake 2nd ball
                         new DrivetrainRamsete(trajectories.get("5Ball.To2and3"), drivetrain),
                         new RunCommand(intake::runMotor, intake)),
-                new ShootSequence(drivetrain, shooter, limelight, hopper).withTimeout(4), // shoot 2nd and 3rd ball
+                new ShootSequence(drivetrain, shooter, limelight, hopper).withTimeout(3), // shoot 2nd and 3rd ball
                 new ParallelRaceGroup(
                         new DrivetrainRamsete(trajectories.get("5Ball.To4and5"), drivetrain),
                         new RunCommand(intake::runMotor, intake)), // drive and intake 4th and 5th ball
@@ -39,7 +39,7 @@ public class FiveBall extends SequentialCommandGroup {
                         new WaitCommand(3),
                         new RunCommand(intake::runMotor, intake)), // wait for human player to give 5th ball
                 new DrivetrainRamsete(trajectories.get("5Ball.ToGoal"), drivetrain),
-                new ShootSequence(drivetrain, shooter, limelight, hopper).withTimeout(4), // shoot 4th and 5th ball
+                new ShootSequence(drivetrain, shooter, limelight, hopper).withTimeout(3), // shoot 4th and 5th ball
                 new InstantCommand(intake::setUp, intake)); // intake up
     }
 }
