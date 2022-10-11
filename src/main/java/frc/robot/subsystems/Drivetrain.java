@@ -4,22 +4,14 @@
 
 package frc.robot.subsystems;
 
-import java.util.List;
-
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
@@ -33,7 +25,6 @@ import com.techhounds.houndutil.houndlog.loggers.DeviceLogger;
 import com.techhounds.houndutil.houndlog.loggers.Logger;
 import com.techhounds.houndutil.houndlog.loggers.SendableLogger;
 import frc.robot.Constants;
-import frc.robot.commands.DrivetrainRamsete;
 
 /**
  * Drivetrain subsystem, includes all of the motors and the methods with which
@@ -61,13 +52,18 @@ public class Drivetrain extends SubsystemBase {
     public Drivetrain() {
         leftPrimaryMotor.getEncoder().setPositionConversionFactor(Constants.Drivetrain.ENCODER_DISTANCE_TO_METERS);
         rightPrimaryMotor.getEncoder().setPositionConversionFactor(Constants.Drivetrain.ENCODER_DISTANCE_TO_METERS);
-        leftPrimaryMotor.getEncoder().setVelocityConversionFactor(Constants.Drivetrain.ENCODER_DISTANCE_TO_METERS / 60);
+        leftPrimaryMotor.getEncoder()
+                .setVelocityConversionFactor(Constants.Drivetrain.ENCODER_DISTANCE_TO_METERS / 60.0);
         rightPrimaryMotor.getEncoder()
-                .setPositionConversionFactor(Constants.Drivetrain.ENCODER_DISTANCE_TO_METERS / 60);
-        leftMotors.setInverted(true);
+                .setVelocityConversionFactor(Constants.Drivetrain.ENCODER_DISTANCE_TO_METERS / 60.0);
+
+        rightPrimaryMotor.setInverted(true); // not doing this to the MotorControllerGroup because we need the encoders
+                                             // to be inverted too
+        rightSecondaryMotor.setInverted(true);
+
         drive = new DifferentialDrive(leftMotors, rightMotors);
         drive.setMaxOutput(0.8);
-        odometry = new DifferentialDriveOdometry(navx.getRotation2d());
+        odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getGyroAngle()));
 
         LoggingManager.getInstance().addGroup("Drivetrain", new LogGroup(
                 new Logger[] {
@@ -82,9 +78,11 @@ public class Drivetrain extends SubsystemBase {
                         new DeviceLogger<AHRS>(navx, "NavX",
                                 LogProfileBuilder.buildNavXLogItems(navx)),
                         new SendableLogger("NavX", navx),
-                        new SendableLogger("Drive", drive)
-                // new SendableLogger("field", field),
+                        new SendableLogger("Drive", drive),
+                        new SendableLogger("field", field),
                 }));
+
+        // SmartDashboard.putData(field);
 
     }
 
@@ -95,9 +93,10 @@ public class Drivetrain extends SubsystemBase {
      */
     @Override
     public void periodic() {
-        odometry.update(Rotation2d.fromDegrees(-getGyroAngle()), getLeftPosition(), getRightPosition());
+        odometry.update(Rotation2d.fromDegrees(getGyroAngle()), getLeftPosition(), getRightPosition());
         field.setRobotPose(odometry.getPoseMeters());
         SmartDashboard.putData(field);
+        drive.feed();
     }
 
     /**
@@ -223,7 +222,7 @@ public class Drivetrain extends SubsystemBase {
      * Gets the current angle of the gyro.
      */
     public double getGyroAngle() {
-        return -navx.getAngle();
+        return navx.getAngle();
     }
 
     /**
