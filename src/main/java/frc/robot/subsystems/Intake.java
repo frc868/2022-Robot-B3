@@ -36,14 +36,14 @@ public class Intake extends SubsystemBase {
      * Sets the intake to the up position.
      */
     public void setUp() {
-        solenoid.set(DoubleSolenoid.Value.kForward);
+        solenoid.set(DoubleSolenoid.Value.kReverse);
     }
 
     /**
      * Sets the intake to the down position.
      */
     public void setDown() {
-        solenoid.set(DoubleSolenoid.Value.kReverse);
+        solenoid.set(DoubleSolenoid.Value.kForward);
     }
 
     /**

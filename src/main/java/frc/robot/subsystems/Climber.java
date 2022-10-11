@@ -55,8 +55,6 @@ public class Climber extends SubsystemBase {
      * described in Constants.java.
      */
     public Climber() {
-        climberMotors.setInverted(Constants.Climber.IS_INVERTED);
-
         LoggingManager.getInstance().addGroup("Climber", new LogGroup(
                 new Logger[] {
                         new DeviceLogger<CANSparkMax>(primaryMotor, "Primary Motor",

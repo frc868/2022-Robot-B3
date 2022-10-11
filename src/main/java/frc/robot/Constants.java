@@ -27,10 +27,10 @@ public final class Constants {
         }
 
         public static final class PID {
-            public static final double kS = 0.10339;
-            public static final double kV = 2.8014;
-            public static final double kA = 0.58458;
-            public static final double kPVel = 3.849;
+            public static final double kS = 0.2068;
+            public static final double kV = 2.5188;
+            public static final double kA = 0.73449;
+            public static final double kPVel = 3.6295;
 
             public static final class DriveStraight {
                 public static final double kP = 1.0;
@@ -39,26 +39,23 @@ public final class Constants {
             }
 
             public static final class TurnToAngle {
-                public static final int kP = 1;
-                public static final int kI = 0;
-                public static final int kD = 0;
+                public static final double kP = 1;
+                public static final double kI = 0;
+                public static final double kD = 0;
             }
 
             public static final class TurnToBall {
-                public static final int kP = 1;
-                public static final int kI = 0;
-                public static final int kD = 0;
+                public static final double kP = 0.020;
+                public static final double kI = 0.04;
+                public static final double kD = 0.0045;
             }
 
             public static final class TurnToGoal {
-                public static final int kP = 1;
-                public static final int kI = 0;
-                public static final int kD = 0;
+                public static final double kP = 0.023;
+                public static final double kI = 0.0090;
+                public static final double kD = 0.0006;
             }
         }
-
-        public static final boolean IS_LEFT_INVERTED = false;
-        public static final boolean IS_RIGHT_INVERTED = false;
 
         public static final double ENCODER_DISTANCE_TO_METERS = 1.0 * Math.PI
                 * Constants.Drivetrain.Geometry.WHEEL_DIAMETER_METERS / 8.68; // encoder counts per revolution * (2 * pi
@@ -101,8 +98,6 @@ public final class Constants {
             public static final int INTAKE_CHANNEL_1 = 0;
             public static final int INTAKE_CHANNEL_2 = 7;
         }
-
-        public static final boolean IS_INVERTED = false;
     }
 
     public static final class Shooter {
@@ -111,12 +106,12 @@ public final class Constants {
             public static final int SECONDARY = 13;
         }
 
-        public static final double kP = 0.14257;
+        public static final double kP = 0.13887;
         public static final double kI = 0;
         public static final double kD = 0;
-        public static final double kS = 0.055763;
-        public static final double kV = 0.1223;
-        public static final double kA = 0.011442;
+        public static final double kS = 0.032717;
+        public static final double kV = 0.12396;
+        public static final double kA = 0.010278;
     }
 
     public static final class Limelight {
@@ -137,8 +132,6 @@ public final class Constants {
             public static final int SECONDARY = 9;
         }
 
-        public static final boolean IS_INVERTED = false;
-
         public static final class Solenoids {
             public static final int[] CLIMBER_2ND_STAGE = { 2, 5 };
             public static final int[] CLIMBER_LOCK = { 3, 4 };
@@ -151,8 +144,8 @@ public final class Constants {
     }
 
     public static final class Auton {
-        public static final double MAX_VELOCITY = 0.2;
-        public static final double MAX_ACCELERATION = 1;
+        public static final double MAX_VELOCITY = 1;
+        public static final double MAX_ACCELERATION = 4;
         public static final double MAX_ANGULAR_VELOCITY = Math.PI / 4;
         public static final double MAX_ANGULAR_ACCELERATION = Math.PI;
 
