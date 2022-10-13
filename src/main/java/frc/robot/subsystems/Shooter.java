@@ -31,7 +31,8 @@ public class Shooter extends PIDSubsystem {
     private MotorControllerGroup motors = new MotorControllerGroup(primaryMotor, secondaryMotor);
 
     /** The feed-forward controller that runs the shooter motors. */
-    private SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(Constants.Shooter.kS, Constants.Shooter.kV);
+    private SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(Constants.Shooter.kS, Constants.Shooter.kV,
+            Constants.Shooter.kA);
 
     /**
      * Initializes the shooter.
@@ -39,6 +40,8 @@ public class Shooter extends PIDSubsystem {
     public Shooter() {
         super(new PIDController(Constants.Shooter.kP, Constants.Shooter.kI, Constants.Shooter.kD));
 
+        getController().setTolerance(1.0);
+        primaryMotor.getEncoder().setVelocityConversionFactor(1.0 / 60.0);
         primaryMotor.setInverted(true);
 
         LoggingManager.getInstance().addGroup("Shooter", new LogGroup(
@@ -67,7 +70,10 @@ public class Shooter extends PIDSubsystem {
      * feedforward value to the voltage.
      */
     @Override
+
     public void useOutput(double output, double setpoint) {
+        System.out.println("PID" + output);
+        System.out.println(feedforward.calculate(setpoint));
         setSpeedVolts(output + feedforward.calculate(setpoint));
     }
 
@@ -112,5 +118,9 @@ public class Shooter extends PIDSubsystem {
      */
     public void stop() {
         setSpeed(0);
+    }
+
+    public boolean atSetpoint() {
+        return getController().atSetpoint();
     }
 }

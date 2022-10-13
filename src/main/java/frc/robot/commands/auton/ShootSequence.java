@@ -4,7 +4,11 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.commands.RunShooterLockedSpeed;
+import frc.robot.commands.RunShooterSetSpeed;
 import frc.robot.commands.TurnToGoal;
 import frc.robot.sensors.Limelight;
 import frc.robot.subsystems.Drivetrain;
@@ -21,12 +25,13 @@ public class ShootSequence extends SequentialCommandGroup {
     public ShootSequence(Drivetrain drivetrain, Shooter shooter, Limelight limelight, Hopper hopper) {
         addCommands(
                 new InstantCommand(limelight::setShootingMode),
-                new TurnToGoal(drivetrain, limelight).withTimeout(1.0),
+                // new TurnToGoal(drivetrain, limelight).withTimeout(1.0),
                 new ParallelRaceGroup(
-                        new RunShooterLockedSpeed(shooter, limelight),
+                        new RunShooterSetSpeed(33.0, shooter),
                         new SequentialCommandGroup(
+                                new WaitUntilCommand(shooter::atSetpoint),
                                 new InstantCommand(hopper::gatekeepersIn, hopper),
-                                new RunCommand(hopper::runMotor, hopper).withTimeout(1.5),
+                                new StartEndCommand(hopper::runMotor, hopper::stopMotor, hopper).withTimeout(1.4),
                                 new InstantCommand(hopper::gatekeepersOut, hopper))),
                 new InstantCommand(limelight::setDriverAssistMode));
 
