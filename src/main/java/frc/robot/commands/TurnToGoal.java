@@ -19,7 +19,7 @@ public class TurnToGoal extends PIDCommand {
         super(new PIDController(Constants.Drivetrain.PID.TurnToGoal.kP,
                 Constants.Drivetrain.PID.TurnToGoal.kI,
                 Constants.Drivetrain.PID.TurnToGoal.kD), limelight::getTx, 0,
-                d -> drivetrain.tankDrive(d, -d),
+                d -> drivetrain.tankDrive(-d, d),
                 drivetrain, limelight);
 
         this.drivetrain = drivetrain;
