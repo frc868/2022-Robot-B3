@@ -77,12 +77,12 @@ public class Limelight extends SubsystemBase {
      * Calculates the shooter speed based on the distance we got and a linear
      * interpolation equation (aka a regression).
      * 
-     * @return the calculated shooter speed, in RPMs
+     * @return the calculated shooter speed, in rot/s
      */
     public double calcShooterSpeed() {
         double distance = this.getDistance();
         double calcSpeed = 5017 + (-735 * distance) + (76.8 * Math.pow(distance, 2)) + (-2.4 * Math.pow(distance, 3));
-        return calcSpeed;
+        return calcSpeed / 60.0; // switching from RPMs to rot/s
     }
 
     /**
