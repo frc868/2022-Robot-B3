@@ -1,4 +1,4 @@
-package frc.robot.commands;
+package frc.robot.commands.auton;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
@@ -14,8 +14,11 @@ import frc.robot.subsystems.Drivetrain;
  * 
  * @author dr
  */
-public class DrivetrainRamsete extends RamseteCommand {
-    public DrivetrainRamsete(Trajectory trajectory, Drivetrain drivetrain) {
+public class DrivetrainTrajectoryCommand extends RamseteCommand {
+    public Trajectory trajectory;
+    public Drivetrain drivetrain;
+
+    public DrivetrainTrajectoryCommand(Trajectory trajectory, Drivetrain drivetrain) {
         super(
                 trajectory,
                 drivetrain::getPose,
@@ -28,5 +31,13 @@ public class DrivetrainRamsete extends RamseteCommand {
                 new PIDController(Constants.Drivetrain.PID.kPVel, 0, 0),
                 drivetrain::tankDriveVolts,
                 drivetrain);
+        this.trajectory = trajectory;
+        this.drivetrain = drivetrain;
+    }
+
+    @Override
+    public void initialize() {
+        drivetrain.resetOdometry(trajectory.getInitialPose());
+        super.initialize();
     }
 }
