@@ -5,11 +5,17 @@
 package frc.robot;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+
+import com.techhounds.houndutil.houndlib.auto.AutoManager;
+import com.techhounds.houndutil.houndlib.auto.AutoPath;
+import com.techhounds.houndutil.houndlib.auto.AutoRoutine;
+import com.techhounds.houndutil.houndlib.auto.trajectoryloader.TrajectoryLoader;
+import com.techhounds.houndutil.houndlib.auto.trajectoryloader.TrajectorySettings;
+import com.techhounds.houndutil.houndlog.LogGroup;
+import com.techhounds.houndutil.houndlog.LoggingManager;
+import com.techhounds.houndutil.houndlog.loggers.Logger;
+import com.techhounds.houndutil.houndlog.loggers.SendableLogger;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -19,22 +25,18 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-import com.pathplanner.lib.PathPlanner;
-import com.techhounds.houndutil.houndlib.auto.AutoManager;
-import com.techhounds.houndutil.houndlib.auto.AutoPath;
-import com.techhounds.houndutil.houndlib.auto.AutoRoutine;
-import com.techhounds.houndutil.houndlog.LogGroup;
-import com.techhounds.houndutil.houndlog.LoggingManager;
-import com.techhounds.houndutil.houndlog.loggers.Logger;
-import com.techhounds.houndutil.houndlog.loggers.SendableLogger;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.Constants.OI;
 import frc.robot.commands.DefaultDrive;
 import frc.robot.commands.RunShooter;
@@ -55,14 +57,6 @@ import frc.robot.subsystems.Hopper;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Misc;
 import frc.robot.subsystems.Shooter;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.POVButton;
 
 public class RobotContainer {
     private final Drivetrain drivetrain = new Drivetrain();
@@ -78,34 +72,19 @@ public class RobotContainer {
     SlewRateLimiter xLimiter = new SlewRateLimiter(10);
     SlewRateLimiter yLimiter = new SlewRateLimiter(10);
 
-    XboxController driverController = new XboxController(OI.DRIVER_PORT);
-    XboxController operatorController = new XboxController(OI.OPERATOR_PORT);
+    XboxController driverController;
+    XboxController operatorController;
     SendableChooser<AutoRoutine> chooser = new SendableChooser<AutoRoutine>();
-    HashMap<String, Trajectory> trajectories = new HashMap<String, Trajectory>();
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     public RobotContainer() {
         LiveWindow.disableAllTelemetry();
-        // Configure the button bindings
-        drivetrain.setDefaultCommand(
-                new DefaultDrive(drivetrain, driverController::getLeftY, driverController::getRightY));
-        climber.setDefaultCommand(
-                new RunCommand(() -> {
-                    climber.setSpeedLeft(operatorController.getLeftY());
-                    climber.setSpeedRight(operatorController.getRightY());
-                }, climber));
-        configureButtonBindings();
-        loadTrajectories();
+        if (RobotBase.isReal()) { // prevents annoying joystick disconnected warning
+            configureControllerBindings();
+        }
         configureAuton();
-        SmartDashboard.putData(new InstantCommand(() -> {
-            System.out.println("test");
-            AutoManager.getInstance().getField().getObject("Traj")
-                    .setTrajectory(new Trajectory());
-            System.out
-                    .println(AutoManager.getInstance().getField().getObject("Traj").getPose());
-        }));
 
         LoggingManager.getInstance().addGroup("Commands", new LogGroup(
                 new Logger[] {
@@ -147,108 +126,18 @@ public class RobotContainer {
                 }));
     }
 
-    private void loadTrajectories() {
-        for (String name : new String[] {
-                "2Ball1",
-                "2Ball2",
-                "2Ball3",
-                "3Ball1",
-                "3Ball2-FullPath",
-                "3Ball2.To2",
-                "3Ball2.To3andGoal",
-                "4Ball-FullPath",
-                "4Ball.To2",
-                "4Ball.To3and4",
-                "4Ball.ToGoal",
-                "5Ball-FullPath",
-                "5Ball.To2and3",
-                "5Ball.To4and5",
-                "5Ball.ToGoal",
-                "TestTrajectory" }) {
-            try {
-                Trajectory trajectory = PathPlanner.loadPath(name,
-                        Constants.Auton.MAX_VELOCITY,
-                        Constants.Auton.MAX_ACCELERATION);
+    private void configureControllerBindings() {
+        driverController = new XboxController(OI.DRIVER_PORT);
+        operatorController = new XboxController(OI.OPERATOR_PORT);
 
-                trajectories.put(name, trajectory);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                DriverStation.reportError("Unable to open trajectory: " + name,
-                        ex.getStackTrace());
-            }
-        }
+        drivetrain.setDefaultCommand(
+                new DefaultDrive(drivetrain, driverController::getLeftY, driverController::getRightY));
+        climber.setDefaultCommand(
+                new RunCommand(() -> {
+                    climber.setSpeedLeft(operatorController.getLeftY());
+                    climber.setSpeedRight(operatorController.getRightY());
+                }, climber));
 
-        trajectories.put("javaTraj", createJavaTraj());
-    }
-
-    private void configureAuton() {
-        AutoManager.getInstance().addRoutine(
-                new AutoRoutine(
-                        "Two Ball: Left",
-                        new TwoBall(trajectories.get("2Ball1"), drivetrain, shooter, intake, hopper, limelight),
-                        new ArrayList<AutoPath>(List.of(new AutoPath("2Ball1", trajectories.get("2Ball1"))))));
-        AutoManager.getInstance().addRoutine(
-                new AutoRoutine(
-                        "Two Ball: Middle",
-                        new TwoBall(trajectories.get("2Ball2"), drivetrain, shooter, intake, hopper, limelight),
-                        new ArrayList<AutoPath>(List.of(new AutoPath("2Ball2", trajectories.get("2Ball2"))))));
-
-        AutoManager.getInstance().addRoutine(
-                new AutoRoutine(
-                        "Two Ball: Right",
-                        new TwoBall(trajectories.get("2Ball3"), drivetrain, shooter, intake, hopper, limelight),
-                        new ArrayList<AutoPath>(List.of(new AutoPath("2Ball3", trajectories.get("2Ball3"))))));
-
-        AutoManager.getInstance().addRoutine(
-                new AutoRoutine(
-                        "Three Ball: Shoot First",
-                        new ThreeBall1(trajectories.get("3Ball1"), drivetrain, shooter, intake, hopper, limelight),
-                        new ArrayList<AutoPath>(List.of(new AutoPath("3Ball1", trajectories.get("3Ball1"))))));
-
-        AutoManager.getInstance().addRoutine(
-                new AutoRoutine(
-                        "Four Ball: Hangar and HP Station",
-                        new FourBall(new HashMap<String, Trajectory>(
-                                Map.ofEntries(Map.entry("4Ball.To2", trajectories.get("4Ball.To2")),
-                                        Map.entry("4Ball.To3and4", trajectories.get("4Ball.To3and4")),
-                                        Map.entry("4Ball.ToGoal", trajectories.get("4Ball.ToGoal")))),
-                                drivetrain, shooter, intake, hopper, limelight),
-                        new ArrayList<AutoPath>(List.of(
-                                new AutoPath("4Ball.To2", trajectories.get("4Ball.To2")),
-                                new AutoPath("4Ball.To3and4", trajectories.get("4Ball.To3and4")),
-                                new AutoPath("4Ball.ToGoal", trajectories.get("4Ball.ToGoal"))))));
-
-        AutoManager.getInstance().addRoutine(
-                new AutoRoutine(
-                        "Five Ball",
-                        new FiveBall(
-                                new HashMap<String, Trajectory>(
-                                        Map.ofEntries(Map.entry("5Ball.To2and3", trajectories.get("5Ball.To2and3")),
-                                                Map.entry("5Ball.To4and5", trajectories.get("5Ball.To4and5")),
-                                                Map.entry("5Ball.ToGoal", trajectories.get("5Ball.ToGoal")))),
-                                drivetrain, shooter, intake, hopper, limelight, astra),
-                        new ArrayList<AutoPath>(
-                                List.of(
-                                        new AutoPath("5Ball.To2and3", trajectories.get("5Ball.To2and3")),
-                                        new AutoPath("5Ball.To4and5", trajectories.get("5Ball.To4and5")),
-                                        new AutoPath("5Ball.ToGoal", trajectories.get("5Ball.ToGoal"))))));
-
-        AutoManager.getInstance().addRoutine(
-                new AutoRoutine(
-                        "Test Trajectory",
-                        new DrivetrainTrajectoryCommand(trajectories.get("TestTrajectory"), drivetrain),
-                        new ArrayList<AutoPath>(List.of(new AutoPath("Traj", trajectories.get("TestTrajectory"))))));
-
-        AutoManager.getInstance().addRoutine(
-                new AutoRoutine(
-                        "Java Traj",
-                        new DrivetrainTrajectoryCommand(trajectories.get("javaTraj"), drivetrain),
-                        new ArrayList<AutoPath>(
-                                List.of(new AutoPath("javaTraj", trajectories.get("javaTraj"))))));
-
-    }
-
-    private void configureButtonBindings() {
         // Driver button A, intake down
         new JoystickButton(driverController, Button.kA.value)
                 .whenPressed(new InstantCommand(intake::setDown, intake));
@@ -303,7 +192,47 @@ public class RobotContainer {
         // Operator D-Pad South, turn to ball
         new POVButton(operatorController, 180)
                 .whenPressed(new TurnToBall(drivetrain, astra));
+    }
 
+    private void configureAuton() {
+        TrajectoryLoader.addSettings(new TrajectorySettings("2Ball1").withMaxVelocity(2));
+        TrajectoryLoader.loadAutoPaths();
+
+        AutoManager.getInstance().addRoutine(new AutoRoutine("Two Ball: Left",
+                new TwoBall(TrajectoryLoader.getAutoPaths("2Ball1"), drivetrain, shooter, intake, hopper, limelight)));
+
+        AutoManager.getInstance().addRoutine(new AutoRoutine("Two Ball: Middle",
+                new TwoBall(TrajectoryLoader.getAutoPaths("2Ball2"), drivetrain, shooter, intake, hopper, limelight)));
+
+        AutoManager.getInstance().addRoutine(new AutoRoutine("Two Ball: Right",
+                new TwoBall(TrajectoryLoader.getAutoPaths("2Ball3"), drivetrain, shooter, intake, hopper, limelight)));
+
+        AutoManager.getInstance().addRoutine(new AutoRoutine("Three Ball: Shoot First", new ThreeBall1(
+                TrajectoryLoader.getAutoPaths("3Ball1"), drivetrain, shooter, intake, hopper, limelight)));
+
+        AutoManager.getInstance()
+                .addRoutine(new AutoRoutine("Four Ball: Hangar and HP Station",
+                        new FourBall(TrajectoryLoader.getAutoPaths("4Ball.To2", "4Ball.To3and4", "4Ball.ToGoal"),
+                                drivetrain, shooter, intake, hopper, limelight)));
+
+        AutoManager.getInstance()
+                .addRoutine(new AutoRoutine("Five Ball",
+                        new FiveBall(TrajectoryLoader.getAutoPaths("5Ball.To2and3", "5Ball.To4and5", "5Ball.ToGoal"),
+                                drivetrain, shooter, intake, hopper, limelight, astra)));
+
+        AutoManager.getInstance().addRoutine(
+                new AutoRoutine(
+                        "Test Trajectory",
+                        new DrivetrainTrajectoryCommand(TrajectoryLoader.getAutoPath("TestTrajectory").getTrajectory(),
+                                drivetrain),
+                        TrajectoryLoader.getAutoPaths("TestTrajectory")));
+
+        AutoManager.getInstance().addRoutine(
+                new AutoRoutine(
+                        "Java Traj",
+                        new DrivetrainTrajectoryCommand(createJavaTraj(), drivetrain),
+                        new ArrayList<AutoPath>(
+                                List.of(new AutoPath("javaTraj", createJavaTraj())))));
     }
 
     public Trajectory createJavaTraj() {
@@ -333,15 +262,4 @@ public class RobotContainer {
 
         return exampleTrajectory;
     }
-
-    // public Command getAutonomousCommand() {
-    // Trajectory trajectory = trajectories.get("5Ball");
-    // Field2d field = new Field2d();
-    // field.getObject("traj1").setTrajectory(trajectories.get("5Ball.To2and3"));
-    // field.getObject("traj2").setTrajectory(trajectories.get("5Ball.To4and5"));
-    // field.getObject("traj3").setTrajectory(trajectories.get("5Ball.ToGoal"));
-    // SmartDashboard.putData(field);
-    // // drivetrain.resetOdometry(trajectory.getInitialPose());
-    // return new DrivetrainTrajectoryCommand(trajectory, drivetrain);
-    // }
 }

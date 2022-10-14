@@ -50,7 +50,6 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-        LoggingManager.getInstance().run();
     }
 
     /** This function is called once each time the robot enters Disabled mode. */
