@@ -18,6 +18,8 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import com.techhounds.houndutil.houndlib.auto.AutoManager;
 import com.techhounds.houndutil.houndlog.LogGroup;
 import com.techhounds.houndutil.houndlog.LogProfileBuilder;
 import com.techhounds.houndutil.houndlog.LoggingManager;
@@ -44,7 +46,6 @@ public class Drivetrain extends SubsystemBase {
     private DifferentialDrive drive;
     private AHRS navx = new AHRS(SerialPort.Port.kMXP);
     private DifferentialDriveOdometry odometry;
-    private Field2d field = new Field2d();
 
     /**
      * Initializes the drivetrain.
@@ -61,9 +62,15 @@ public class Drivetrain extends SubsystemBase {
                                              // to be inverted too
         rightSecondaryMotor.setInverted(true);
 
+        leftPrimaryMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+        leftSecondaryMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+        rightPrimaryMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+        rightSecondaryMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+
         drive = new DifferentialDrive(leftMotors, rightMotors);
         drive.setMaxOutput(0.8);
         odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getGyroAngle()));
+        AutoManager.getInstance().setResetOdometryConsumer(this::resetOdometry);
 
         LoggingManager.getInstance().addGroup("Drivetrain", new LogGroup(
                 new Logger[] {
@@ -79,7 +86,6 @@ public class Drivetrain extends SubsystemBase {
                                 LogProfileBuilder.buildNavXLogItems(navx)),
                         new SendableLogger("NavX", navx),
                         new SendableLogger("Drive", drive),
-                        new SendableLogger("field", field),
                 }));
 
         // SmartDashboard.putData(field);
@@ -94,8 +100,7 @@ public class Drivetrain extends SubsystemBase {
     @Override
     public void periodic() {
         odometry.update(Rotation2d.fromDegrees(getGyroAngle()), getLeftPosition(), getRightPosition());
-        field.setRobotPose(odometry.getPoseMeters());
-        SmartDashboard.putData(field);
+        AutoManager.getInstance().getField().setRobotPose(odometry.getPoseMeters());
         drive.feed();
     }
 
@@ -159,7 +164,6 @@ public class Drivetrain extends SubsystemBase {
      * @param rightVolts the right output
      */
     public void tankDriveVolts(double leftVolts, double rightVolts) {
-        System.out.println(leftVolts + " " + rightVolts);
         leftMotors.setVoltage(leftVolts);
         rightMotors.setVoltage(rightVolts);
         drive.feed();
