@@ -145,7 +145,7 @@ public final class Constants {
 
     public static final class Auton {
         public static final double MAX_VELOCITY = 1;
-        public static final double MAX_ACCELERATION = 4;
+        public static final double MAX_ACCELERATION = 1;
         public static final double MAX_ANGULAR_VELOCITY = Math.PI / 4;
         public static final double MAX_ANGULAR_ACCELERATION = Math.PI;
 
