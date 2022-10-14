@@ -40,6 +40,8 @@ public class Shooter extends PIDSubsystem {
         super(new PIDController(Constants.Shooter.kP, Constants.Shooter.kI, Constants.Shooter.kD));
 
         getController().setTolerance(1.0);
+
+        // to convert the measurements from RPMs to rot/s (thanks REV robotics)
         primaryMotor.getEncoder().setVelocityConversionFactor(1.0 / 60.0);
         primaryMotor.setInverted(true);
 
