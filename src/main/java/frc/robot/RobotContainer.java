@@ -25,6 +25,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -71,8 +72,8 @@ public class RobotContainer {
     SlewRateLimiter xLimiter = new SlewRateLimiter(10);
     SlewRateLimiter yLimiter = new SlewRateLimiter(10);
 
-    XboxController driverController = new XboxController(OI.DRIVER_PORT);
-    XboxController operatorController = new XboxController(OI.OPERATOR_PORT);
+    XboxController driverController;
+    XboxController operatorController;
     SendableChooser<AutoRoutine> chooser = new SendableChooser<AutoRoutine>();
 
     /**
@@ -80,14 +81,9 @@ public class RobotContainer {
      */
     public RobotContainer() {
         LiveWindow.disableAllTelemetry();
-        drivetrain.setDefaultCommand(
-                new DefaultDrive(drivetrain, driverController::getLeftY, driverController::getRightY));
-        climber.setDefaultCommand(
-                new RunCommand(() -> {
-                    climber.setSpeedLeft(operatorController.getLeftY());
-                    climber.setSpeedRight(operatorController.getRightY());
-                }, climber));
-        configureButtonBindings();
+        if (RobotBase.isReal()) { // prevents annoying joystick disconnected warning
+            configureControllerBindings();
+        }
         configureAuton();
 
         LoggingManager.getInstance().addGroup("Commands", new LogGroup(
@@ -130,49 +126,18 @@ public class RobotContainer {
                 }));
     }
 
-    private void configureAuton() {
-        TrajectoryLoader.addSettings(new TrajectorySettings("2Ball1").withMaxVelocity(2));
-        TrajectoryLoader.loadAutoPaths();
+    private void configureControllerBindings() {
+        driverController = new XboxController(OI.DRIVER_PORT);
+        operatorController = new XboxController(OI.OPERATOR_PORT);
 
-        AutoManager.getInstance().addRoutine(new AutoRoutine("Two Ball: Left",
-                new TwoBall(TrajectoryLoader.getAutoPaths("2Ball1"), drivetrain, shooter, intake, hopper, limelight)));
+        drivetrain.setDefaultCommand(
+                new DefaultDrive(drivetrain, driverController::getLeftY, driverController::getRightY));
+        climber.setDefaultCommand(
+                new RunCommand(() -> {
+                    climber.setSpeedLeft(operatorController.getLeftY());
+                    climber.setSpeedRight(operatorController.getRightY());
+                }, climber));
 
-        AutoManager.getInstance().addRoutine(new AutoRoutine("Two Ball: Middle",
-                new TwoBall(TrajectoryLoader.getAutoPaths("2Ball2"), drivetrain, shooter, intake, hopper, limelight)));
-
-        AutoManager.getInstance().addRoutine(new AutoRoutine("Two Ball: Right",
-                new TwoBall(TrajectoryLoader.getAutoPaths("2Ball3"), drivetrain, shooter, intake, hopper, limelight)));
-
-        AutoManager.getInstance().addRoutine(new AutoRoutine("Three Ball: Shoot First", new ThreeBall1(
-                TrajectoryLoader.getAutoPaths("3Ball1"), drivetrain, shooter, intake, hopper, limelight)));
-
-        AutoManager.getInstance()
-                .addRoutine(new AutoRoutine("Four Ball: Hangar and HP Station",
-                        new FourBall(TrajectoryLoader.getAutoPaths("4Ball.To2", "4Ball.To3and4", "4Ball.ToGoal"),
-                                drivetrain, shooter, intake, hopper, limelight)));
-
-        AutoManager.getInstance()
-                .addRoutine(new AutoRoutine("Five Ball",
-                        new FiveBall(TrajectoryLoader.getAutoPaths("5Ball.To2and3", "5Ball.To4and5", "5Ball.ToGoal"),
-                                drivetrain, shooter, intake, hopper, limelight, astra)));
-
-        AutoManager.getInstance().addRoutine(
-                new AutoRoutine(
-                        "Test Trajectory",
-                        new DrivetrainTrajectoryCommand(TrajectoryLoader.getAutoPath("TestTrajectory").getTrajectory(),
-                                drivetrain),
-                        TrajectoryLoader.getAutoPaths("TestTrajectory")));
-
-        AutoManager.getInstance().addRoutine(
-                new AutoRoutine(
-                        "Java Traj",
-                        new DrivetrainTrajectoryCommand(createJavaTraj(), drivetrain),
-                        new ArrayList<AutoPath>(
-                                List.of(new AutoPath("javaTraj", createJavaTraj())))));
-
-    }
-
-    private void configureButtonBindings() {
         // Driver button A, intake down
         new JoystickButton(driverController, Button.kA.value)
                 .whenPressed(new InstantCommand(intake::setDown, intake));
@@ -227,7 +192,47 @@ public class RobotContainer {
         // Operator D-Pad South, turn to ball
         new POVButton(operatorController, 180)
                 .whenPressed(new TurnToBall(drivetrain, astra));
+    }
 
+    private void configureAuton() {
+        TrajectoryLoader.addSettings(new TrajectorySettings("2Ball1").withMaxVelocity(2));
+        TrajectoryLoader.loadAutoPaths();
+
+        AutoManager.getInstance().addRoutine(new AutoRoutine("Two Ball: Left",
+                new TwoBall(TrajectoryLoader.getAutoPaths("2Ball1"), drivetrain, shooter, intake, hopper, limelight)));
+
+        AutoManager.getInstance().addRoutine(new AutoRoutine("Two Ball: Middle",
+                new TwoBall(TrajectoryLoader.getAutoPaths("2Ball2"), drivetrain, shooter, intake, hopper, limelight)));
+
+        AutoManager.getInstance().addRoutine(new AutoRoutine("Two Ball: Right",
+                new TwoBall(TrajectoryLoader.getAutoPaths("2Ball3"), drivetrain, shooter, intake, hopper, limelight)));
+
+        AutoManager.getInstance().addRoutine(new AutoRoutine("Three Ball: Shoot First", new ThreeBall1(
+                TrajectoryLoader.getAutoPaths("3Ball1"), drivetrain, shooter, intake, hopper, limelight)));
+
+        AutoManager.getInstance()
+                .addRoutine(new AutoRoutine("Four Ball: Hangar and HP Station",
+                        new FourBall(TrajectoryLoader.getAutoPaths("4Ball.To2", "4Ball.To3and4", "4Ball.ToGoal"),
+                                drivetrain, shooter, intake, hopper, limelight)));
+
+        AutoManager.getInstance()
+                .addRoutine(new AutoRoutine("Five Ball",
+                        new FiveBall(TrajectoryLoader.getAutoPaths("5Ball.To2and3", "5Ball.To4and5", "5Ball.ToGoal"),
+                                drivetrain, shooter, intake, hopper, limelight, astra)));
+
+        AutoManager.getInstance().addRoutine(
+                new AutoRoutine(
+                        "Test Trajectory",
+                        new DrivetrainTrajectoryCommand(TrajectoryLoader.getAutoPath("TestTrajectory").getTrajectory(),
+                                drivetrain),
+                        TrajectoryLoader.getAutoPaths("TestTrajectory")));
+
+        AutoManager.getInstance().addRoutine(
+                new AutoRoutine(
+                        "Java Traj",
+                        new DrivetrainTrajectoryCommand(createJavaTraj(), drivetrain),
+                        new ArrayList<AutoPath>(
+                                List.of(new AutoPath("javaTraj", createJavaTraj())))));
     }
 
     public Trajectory createJavaTraj() {
