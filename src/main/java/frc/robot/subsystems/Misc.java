@@ -18,7 +18,7 @@ import com.techhounds.houndutil.houndlog.loggers.Logger;
 public class Misc extends SubsystemBase {
     /** The PDH (CAN ID 1) */
     private PowerDistribution pdh = new PowerDistribution();
-    /** The PH (CAN ID ?) TODO */
+    /** The PH (CAN ID 1) */
     private PneumaticHub ph = new PneumaticHub();
 
     /** Adds the loggers for the Miscellaneous group. */
