@@ -97,7 +97,7 @@ public class RobotContainer {
                     climber.setSpeedRight(operatorController.getRightY());
                 }, climber));
         configureButtonBindings();
-        loadTrajectories();
+        // loadTrajectories();
         configureAuton();
         SmartDashboard.putData(new InstantCommand(() -> {
             System.out.println("test");
@@ -145,40 +145,6 @@ public class RobotContainer {
                             }
                         }),
                 }));
-    }
-
-    private void loadTrajectories() {
-        for (String name : new String[] {
-                "2Ball1",
-                "2Ball2",
-                "2Ball3",
-                "3Ball1",
-                "3Ball2-FullPath",
-                "3Ball2.To2",
-                "3Ball2.To3andGoal",
-                "4Ball-FullPath",
-                "4Ball.To2",
-                "4Ball.To3and4",
-                "4Ball.ToGoal",
-                "5Ball-FullPath",
-                "5Ball.To2and3",
-                "5Ball.To4and5",
-                "5Ball.ToGoal",
-                "TestTrajectory" }) {
-            try {
-                Trajectory trajectory = PathPlanner.loadPath(name,
-                        Constants.Auton.MAX_VELOCITY,
-                        Constants.Auton.MAX_ACCELERATION);
-
-                trajectories.put(name, trajectory);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                DriverStation.reportError("Unable to open trajectory: " + name,
-                        ex.getStackTrace());
-            }
-        }
-
-        trajectories.put("javaTraj", createJavaTraj());
     }
 
     private void configureAuton() {
