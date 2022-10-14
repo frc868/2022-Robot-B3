@@ -87,6 +87,24 @@ public class Climber extends SubsystemBase {
     }
 
     /**
+     * Sets the speed of the left climber.
+     * 
+     * @param speed speed from -1 to 1 at which to run the motor.
+     */
+    public void setSpeedLeft(double speed) {
+        primaryMotor.set(speed);
+    }
+
+    /**
+     * Sets the speed of the right climber.
+     * 
+     * @param speed speed from -1 to 1 at which to run the motor.
+     */
+    public void setSpeedRight(double speed) {
+        secondaryMotor.set(speed);
+    }
+
+    /**
      * Resets the encoders by setting their positions to zero.
      */
     public void resetEncoders() {
