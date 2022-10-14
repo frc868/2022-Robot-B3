@@ -12,7 +12,6 @@ import com.techhounds.houndutil.houndlog.LogGroup;
 import com.techhounds.houndutil.houndlog.LogProfileBuilder;
 import com.techhounds.houndutil.houndlog.LoggingManager;
 import com.techhounds.houndutil.houndlog.loggers.DeviceLogger;
-import com.techhounds.houndutil.houndlog.loggers.Logger;
 import com.techhounds.houndutil.houndlog.loggers.SendableLogger;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -70,20 +69,18 @@ public class Drivetrain extends SubsystemBase {
         AutoManager.getInstance().setResetOdometryConsumer(this::resetOdometry);
 
         LoggingManager.getInstance().addGroup("Drivetrain", new LogGroup(
-                new Logger[] {
-                        new DeviceLogger<CANSparkMax>(leftPrimaryMotor, "Left Primary Motor",
-                                LogProfileBuilder.buildCANSparkMaxLogItems(leftPrimaryMotor)),
-                        new DeviceLogger<CANSparkMax>(leftSecondaryMotor, "Left Secondary Motor",
-                                LogProfileBuilder.buildCANSparkMaxLogItems(leftSecondaryMotor)),
-                        new DeviceLogger<CANSparkMax>(rightPrimaryMotor, "Right Primary Motor",
-                                LogProfileBuilder.buildCANSparkMaxLogItems(rightPrimaryMotor)),
-                        new DeviceLogger<CANSparkMax>(rightSecondaryMotor, "Right Secondary Motor",
-                                LogProfileBuilder.buildCANSparkMaxLogItems(rightSecondaryMotor)),
-                        new DeviceLogger<AHRS>(navx, "NavX",
-                                LogProfileBuilder.buildNavXLogItems(navx)),
-                        new SendableLogger("NavX", navx),
-                        new SendableLogger("Drive", drive),
-                }));
+                new DeviceLogger<CANSparkMax>(leftPrimaryMotor, "Left Primary Motor",
+                        LogProfileBuilder.buildCANSparkMaxLogItems(leftPrimaryMotor)),
+                new DeviceLogger<CANSparkMax>(leftSecondaryMotor, "Left Secondary Motor",
+                        LogProfileBuilder.buildCANSparkMaxLogItems(leftSecondaryMotor)),
+                new DeviceLogger<CANSparkMax>(rightPrimaryMotor, "Right Primary Motor",
+                        LogProfileBuilder.buildCANSparkMaxLogItems(rightPrimaryMotor)),
+                new DeviceLogger<CANSparkMax>(rightSecondaryMotor, "Right Secondary Motor",
+                        LogProfileBuilder.buildCANSparkMaxLogItems(rightSecondaryMotor)),
+                new DeviceLogger<AHRS>(navx, "NavX",
+                        LogProfileBuilder.buildNavXLogItems(navx)),
+                new SendableLogger("NavX", navx),
+                new SendableLogger("Drive", drive)));
 
         // SmartDashboard.putData(field);
 

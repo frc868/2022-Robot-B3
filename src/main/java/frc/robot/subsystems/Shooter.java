@@ -12,7 +12,6 @@ import com.techhounds.houndutil.houndlog.LogProfileBuilder;
 import com.techhounds.houndutil.houndlog.LoggingManager;
 import com.techhounds.houndutil.houndlog.enums.LogType;
 import com.techhounds.houndutil.houndlog.loggers.DeviceLogger;
-import com.techhounds.houndutil.houndlog.loggers.Logger;
 import com.techhounds.houndutil.houndlog.loggers.SingleItemLogger;
 import frc.robot.Constants;
 
@@ -45,15 +44,13 @@ public class Shooter extends PIDSubsystem {
         primaryMotor.setInverted(true);
 
         LoggingManager.getInstance().addGroup("Shooter", new LogGroup(
-                new Logger[] {
-                        new DeviceLogger<CANSparkMax>(primaryMotor, "Primary Motor",
-                                LogProfileBuilder.buildCANSparkMaxLogItems(primaryMotor)),
-                        new DeviceLogger<CANSparkMax>(secondaryMotor, "Secondary Motor",
-                                LogProfileBuilder.buildCANSparkMaxLogItems(secondaryMotor)),
-                        new SingleItemLogger<Double>(LogType.NUMBER, "PID Setpoint", this::getSetpoint),
-                        new SingleItemLogger<Double>(LogType.NUMBER, "PID Measurement", this::getMeasurement),
-                        new SingleItemLogger<Double>(LogType.NUMBER, "Velocity", this::getVelocity)
-                }));
+                new DeviceLogger<CANSparkMax>(primaryMotor, "Primary Motor",
+                        LogProfileBuilder.buildCANSparkMaxLogItems(primaryMotor)),
+                new DeviceLogger<CANSparkMax>(secondaryMotor, "Secondary Motor",
+                        LogProfileBuilder.buildCANSparkMaxLogItems(secondaryMotor)),
+                new SingleItemLogger<Double>(LogType.NUMBER, "PID Setpoint", this::getSetpoint),
+                new SingleItemLogger<Double>(LogType.NUMBER, "PID Measurement", this::getMeasurement),
+                new SingleItemLogger<Double>(LogType.NUMBER, "Velocity", this::getVelocity)));
     }
 
     /**

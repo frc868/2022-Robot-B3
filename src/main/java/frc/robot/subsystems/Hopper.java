@@ -10,7 +10,6 @@ import com.techhounds.houndutil.houndlog.LogGroup;
 import com.techhounds.houndutil.houndlog.LogProfileBuilder;
 import com.techhounds.houndutil.houndlog.LoggingManager;
 import com.techhounds.houndutil.houndlog.loggers.DeviceLogger;
-import com.techhounds.houndutil.houndlog.loggers.Logger;
 import frc.robot.Constants;
 
 /**
@@ -33,12 +32,10 @@ public class Hopper extends SubsystemBase {
     public Hopper() {
 
         LoggingManager.getInstance().addGroup("Hopper", new LogGroup(
-                new Logger[] {
-                        new DeviceLogger<CANSparkMax>(motor, "Motor",
-                                LogProfileBuilder.buildCANSparkMaxLogItems(motor)),
-                        new DeviceLogger<DoubleSolenoid>(gatekeepers, "Gatekeepers",
-                                LogProfileBuilder.buildDoubleSolenoidLogItems(gatekeepers))
-                }));
+                new DeviceLogger<CANSparkMax>(motor, "Motor",
+                        LogProfileBuilder.buildCANSparkMaxLogItems(motor)),
+                new DeviceLogger<DoubleSolenoid>(gatekeepers, "Gatekeepers",
+                        LogProfileBuilder.buildDoubleSolenoidLogItems(gatekeepers))));
     }
 
     /**

@@ -7,7 +7,6 @@ import com.techhounds.houndutil.houndlog.LogGroup;
 import com.techhounds.houndutil.houndlog.LogProfileBuilder;
 import com.techhounds.houndutil.houndlog.LoggingManager;
 import com.techhounds.houndutil.houndlog.loggers.DeviceLogger;
-import com.techhounds.houndutil.houndlog.loggers.Logger;
 
 /**
  * The "subsystem" that contains objects that don't belong anywhere else but
@@ -24,12 +23,10 @@ public class Misc extends SubsystemBase {
     /** Adds the loggers for the Miscellaneous group. */
     public Misc() {
         LoggingManager.getInstance().addGroup("Miscellaneous", new LogGroup(
-                new Logger[] {
-                        new DeviceLogger<PowerDistribution>(pdh, "Power Distribution Hub",
-                                LogProfileBuilder.buildPDHLogItems(pdh)),
-                        new DeviceLogger<PneumaticHub>(ph, "Pneumatic Hub",
-                                LogProfileBuilder.buildPneumaticHubLogItems(ph)),
-                }));
+                new DeviceLogger<PowerDistribution>(pdh, "Power Distribution Hub",
+                        LogProfileBuilder.buildPDHLogItems(pdh)),
+                new DeviceLogger<PneumaticHub>(ph, "Pneumatic Hub",
+                        LogProfileBuilder.buildPneumaticHubLogItems(ph))));
     }
 
 }

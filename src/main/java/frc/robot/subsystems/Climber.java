@@ -12,7 +12,6 @@ import com.techhounds.houndutil.houndlog.LogGroup;
 import com.techhounds.houndutil.houndlog.LogProfileBuilder;
 import com.techhounds.houndutil.houndlog.LoggingManager;
 import com.techhounds.houndutil.houndlog.loggers.DeviceLogger;
-import com.techhounds.houndutil.houndlog.loggers.Logger;
 import frc.robot.Constants;
 
 /**
@@ -56,16 +55,14 @@ public class Climber extends SubsystemBase {
      */
     public Climber() {
         LoggingManager.getInstance().addGroup("Climber", new LogGroup(
-                new Logger[] {
-                        new DeviceLogger<CANSparkMax>(primaryMotor, "Primary Motor",
-                                LogProfileBuilder.buildCANSparkMaxLogItems(primaryMotor)),
-                        new DeviceLogger<CANSparkMax>(secondaryMotor, "Secondary Motor",
-                                LogProfileBuilder.buildCANSparkMaxLogItems(secondaryMotor)),
-                        new DeviceLogger<DoubleSolenoid>(climberSecondStage, "Second Stage",
-                                LogProfileBuilder.buildDoubleSolenoidLogItems(climberSecondStage)),
-                        new DeviceLogger<DoubleSolenoid>(climberLocks, "Locks",
-                                LogProfileBuilder.buildDoubleSolenoidLogItems(climberLocks))
-                }));
+                new DeviceLogger<CANSparkMax>(primaryMotor, "Primary Motor",
+                        LogProfileBuilder.buildCANSparkMaxLogItems(primaryMotor)),
+                new DeviceLogger<CANSparkMax>(secondaryMotor, "Secondary Motor",
+                        LogProfileBuilder.buildCANSparkMaxLogItems(secondaryMotor)),
+                new DeviceLogger<DoubleSolenoid>(climberSecondStage, "Second Stage",
+                        LogProfileBuilder.buildDoubleSolenoidLogItems(climberSecondStage)),
+                new DeviceLogger<DoubleSolenoid>(climberLocks, "Locks",
+                        LogProfileBuilder.buildDoubleSolenoidLogItems(climberLocks))));
     }
 
     /**

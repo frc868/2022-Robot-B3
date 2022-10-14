@@ -197,7 +197,9 @@ public class RobotContainer {
     }
 
     private void configureAuton() {
-        TrajectoryLoader.addSettings(new TrajectorySettings("2Ball1").withMaxVelocity(2));
+        TrajectoryLoader.addSettings(
+                new TrajectorySettings("2Ball1").withMaxVelocity(2),
+                new TrajectorySettings("5Ball.ToGoal").withReversed(true));
         TrajectoryLoader.loadAutoPaths();
 
         AutoManager.getInstance().addRoutine(new AutoRoutine("Two Ball: Left",

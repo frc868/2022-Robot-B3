@@ -10,7 +10,6 @@ import com.techhounds.houndutil.houndlog.LogGroup;
 import com.techhounds.houndutil.houndlog.LogProfileBuilder;
 import com.techhounds.houndutil.houndlog.LoggingManager;
 import com.techhounds.houndutil.houndlog.loggers.DeviceLogger;
-import com.techhounds.houndutil.houndlog.loggers.Logger;
 import frc.robot.Constants;
 
 public class Intake extends SubsystemBase {
@@ -24,12 +23,10 @@ public class Intake extends SubsystemBase {
     public Intake() {
         motor.setInverted(true);
         LoggingManager.getInstance().addGroup("Intake", new LogGroup(
-                new Logger[] {
-                        new DeviceLogger<CANSparkMax>(motor, "Motor",
-                                LogProfileBuilder.buildCANSparkMaxLogItems(motor)),
-                        new DeviceLogger<DoubleSolenoid>(solenoid, "Gatekeepers",
-                                LogProfileBuilder.buildDoubleSolenoidLogItems(solenoid)),
-                }));
+                new DeviceLogger<CANSparkMax>(motor, "Motor",
+                        LogProfileBuilder.buildCANSparkMaxLogItems(motor)),
+                new DeviceLogger<DoubleSolenoid>(solenoid, "Gatekeepers",
+                        LogProfileBuilder.buildDoubleSolenoidLogItems(solenoid))));
     }
 
     /**
