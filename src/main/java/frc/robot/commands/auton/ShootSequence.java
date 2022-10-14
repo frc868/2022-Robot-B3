@@ -2,14 +2,10 @@ package frc.robot.commands.auton;
 
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import frc.robot.commands.RunShooterLockedSpeed;
 import frc.robot.commands.RunShooterSetSpeed;
-import frc.robot.commands.TurnToGoal;
 import frc.robot.sensors.Limelight;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Hopper;
@@ -17,7 +13,7 @@ import frc.robot.subsystems.Shooter;
 
 /**
  * Defines the sequence of steps we use to shoot a ball. Could be mapped to a
- * controller button to automate the shooting sequence. TODO: test this.
+ * controller button to automate the shooting sequence.
  * 
  * @author dr
  */
