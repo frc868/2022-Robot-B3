@@ -25,6 +25,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
@@ -81,9 +82,10 @@ public class RobotContainer {
      */
     public RobotContainer() {
         LiveWindow.disableAllTelemetry();
-        if (RobotBase.isReal()) { // prevents annoying joystick disconnected warning
-            configureControllerBindings();
+        if (RobotBase.isSimulation()) { // prevents annoying joystick disconnected warning
+            DriverStation.silenceJoystickConnectionWarning(true);
         }
+        configureControllerBindings();
         configureAuton();
 
         LoggingManager.getInstance().addGroup("Commands", new LogGroup(
@@ -117,7 +119,7 @@ public class RobotContainer {
                                 return true;
                             }
                         }),
-                        new SendableLogger("Limelight On", new InstantCommand(limelight::setShootingMode) {
+                        new SendableLogger("Limelight On", new InstantCommand(limelight::setVisionMode) {
                             @Override
                             public boolean runsWhenDisabled() {
                                 return true;

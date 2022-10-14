@@ -33,6 +33,7 @@ public class DrivetrainTrajectoryCommand extends RamseteCommand {
                 drivetrain);
         this.trajectory = trajectory;
         this.drivetrain = drivetrain;
+        addRequirements(drivetrain);
     }
 
     @Override

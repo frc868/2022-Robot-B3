@@ -3,7 +3,9 @@ package frc.robot.sensors;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import frc.robot.Constants;
 
 /**
@@ -15,7 +17,22 @@ public class Limelight extends SubsystemBase {
     private static NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
 
     public Limelight() {
-
+        NetworkTableEntry limelightEnabled = NetworkTableInstance.getDefault().getTable("HoundLog/Limelight")
+                .getEntry("Enabled");
+        limelightEnabled.setBoolean(false);
+        NetworkButton enableButton = new NetworkButton(limelightEnabled);
+        enableButton.whenPressed(new InstantCommand(this::setVisionMode) {
+            @Override
+            public boolean runsWhenDisabled() {
+                return true;
+            }
+        });
+        enableButton.whenReleased(new InstantCommand(this::setDriverAssistMode) {
+            @Override
+            public boolean runsWhenDisabled() {
+                return true;
+            }
+        });
     }
 
     /**
@@ -110,7 +127,7 @@ public class Limelight extends SubsystemBase {
     /**
      * Sets the limelight into shoot mode (enabling camera and vision processing)
      */
-    public void setShootingMode() {
+    public void setVisionMode() {
         enableLight(true);
         enableVision(true);
     }

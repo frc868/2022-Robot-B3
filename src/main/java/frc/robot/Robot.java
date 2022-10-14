@@ -35,9 +35,9 @@ public class Robot extends TimedRobot {
         LoggingManager.getInstance().init();
 
         // This is something you won't see often in FRC, but I wanted to set the
-        // LoggingManager to run every 100ms instead of every 10ms, and on a 5ms offset
+        // LoggingManager to run every 100ms instead of every 10ms, and on a 10ms offset
         // from robotPeriodic.
-        addPeriodic(LoggingManager.getInstance()::run, 0.1, 0.005);
+        addPeriodic(LoggingManager.getInstance()::run, 0.1, 0.01);
 
         LiveWindow.disableAllTelemetry();
     }
@@ -68,12 +68,6 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void autonomousInit() {
-        // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
-        // // schedule the autonomous command (example)
-        // if (m_autonomousCommand != null) {
-        // m_autonomousCommand.schedule();
-        // }
         AutoManager.getInstance().runSelectedRoutine();
     }
 
