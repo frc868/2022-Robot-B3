@@ -51,9 +51,9 @@ public final class Constants {
             }
 
             public static final class TurnToGoal {
-                public static final double kP = 0.023;
-                public static final double kI = 0.0090;
-                public static final double kD = 0.0006;
+                public static final double kP = 0.05;
+                public static final double kI = 0.02;
+                public static final double kD = 0.005;
             }
         }
 
