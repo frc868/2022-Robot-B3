@@ -31,9 +31,9 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -41,7 +41,7 @@ import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.Constants.OI;
 import frc.robot.commands.DefaultDrive;
 import frc.robot.commands.RunShooter;
-import frc.robot.commands.RunShooterSetSpeed;
+import frc.robot.commands.RunShooterLockedSpeed;
 import frc.robot.commands.TurnToBall;
 import frc.robot.commands.TurnToGoal;
 import frc.robot.commands.auton.DrivetrainTrajectoryCommand;
@@ -85,8 +85,8 @@ public class RobotContainer {
         if (RobotBase.isSimulation()) { // prevents annoying joystick disconnected warning
             DriverStation.silenceJoystickConnectionWarning(true);
         }
-        configureControllerBindings();
         configureAuton();
+        configureControllerBindings();
 
         LoggingManager.getInstance().addGroup("Commands", new LogGroup(
                 new Logger[] {
@@ -105,14 +105,13 @@ public class RobotContainer {
                         new SendableLogger("Run Intake",
                                 new StartEndCommand(intake::runMotor, intake::stopMotor, intake)),
                         new SendableLogger("Gatekeepers In",
-                                new InstantCommand(hopper::gatekeepersIn, hopper)),
+                                new InstantCommand(hopper::gatekeepersOpen, hopper)),
                         new SendableLogger("Gatekeepers Out",
-                                new InstantCommand(hopper::gatekeepersOut, hopper)),
+                                new InstantCommand(hopper::gatekeepersClosed, hopper)),
                         new SendableLogger("Run Shooter", new RunShooter(shooter, limelight)),
                         new SendableLogger("Run Shooter Locked Speed", new RunShooter(shooter, limelight)),
                         new SendableLogger("Turn To Goal", new TurnToGoal(drivetrain, limelight)),
                         new SendableLogger("Turn To Ball", new TurnToBall(drivetrain, astra)),
-                        new SendableLogger("Test", new PrintCommand("hi")),
                         new SendableLogger("Limelight Off", new InstantCommand(limelight::setDriverAssistMode) {
                             @Override
                             public boolean runsWhenDisabled() {
@@ -132,8 +131,11 @@ public class RobotContainer {
         driverController = new XboxController(OI.DRIVER_PORT);
         operatorController = new XboxController(OI.OPERATOR_PORT);
 
+        // Driver sticks, tank drive
         drivetrain.setDefaultCommand(
                 new DefaultDrive(drivetrain, driverController::getLeftY, driverController::getRightY));
+
+        // Operator sticks, climber 1st stage
         climber.setDefaultCommand(
                 new RunCommand(() -> {
                     climber.setSpeedLeft(operatorController.getLeftY());
@@ -145,6 +147,13 @@ public class RobotContainer {
                 .whenPressed(new InstantCommand(intake::setDown, intake));
         // Driver button Y, intake up
         new JoystickButton(driverController, Button.kY.value)
+                .whenPressed(new InstantCommand(intake::setUp, intake));
+
+        // Secondary Control: Driver button RB, intake down
+        new JoystickButton(driverController, Button.kRightBumper.value)
+                .whenPressed(new InstantCommand(intake::setDown, intake));
+        // Secondary Control: Driver button LB, intake up
+        new JoystickButton(driverController, Button.kLeftBumper.value)
                 .whenPressed(new InstantCommand(intake::setUp, intake));
 
         // Driver button B, climber locks extend
@@ -161,45 +170,67 @@ public class RobotContainer {
         new JoystickButton(driverController, Button.kBack.value)
                 .whenPressed(new InstantCommand(climber::retractSecondStage));
 
-        // Driver button RB, run hopper and intake while held
-        new JoystickButton(driverController, Button.kRightBumper.value)
+        // Driver D-Pad North, toggle climber second stage
+        new POVButton(driverController, 0)
+                .whenPressed(
+                        new ConditionalCommand(
+                                new InstantCommand(climber::retractSecondStage),
+                                new InstantCommand(climber::extendSecondStage),
+                                climber::getSecondStage));
+
+        // Operator button RB, index in, run hopper and intake while held
+        new JoystickButton(operatorController, Button.kRightBumper.value)
                 .whenHeld(
                         new ParallelCommandGroup(
                                 new StartEndCommand(hopper::runMotor, hopper::stopMotor, hopper),
                                 new StartEndCommand(intake::runMotor, intake::stopMotor, intake)));
-        // Driver button LB, run hopper and intake in reverse while held
-        new JoystickButton(driverController, Button.kLeftBumper.value)
+        // Operator button LB, index out, run hopper and intake in reverse while held
+        new JoystickButton(operatorController, Button.kLeftBumper.value)
                 .whenHeld(
                         new ParallelCommandGroup(
                                 new StartEndCommand(hopper::reverseMotor, hopper::stopMotor, hopper),
                                 new StartEndCommand(intake::reverseMotor, intake::stopMotor, intake)));
 
-        // Operator button LB, toggle shooter run with limelight regression
-        new JoystickButton(operatorController, Button.kLeftBumper.value)
-                .toggleWhenPressed(new RunShooterSetSpeed(2000.0 / 60.0, shooter));
-
         // Operator button X, gatekeepers out
         new JoystickButton(operatorController, Button.kX.value)
-                .whenPressed(new InstantCommand(hopper::gatekeepersOut, hopper));
+                .whenPressed(new InstantCommand(hopper::gatekeepersClosed, hopper));
         // Operator button B, gatekeepers in
         new JoystickButton(operatorController, Button.kB.value)
-                .whenPressed(new InstantCommand(hopper::gatekeepersIn, hopper));
+                .whenPressed(new InstantCommand(hopper::gatekeepersOpen, hopper));
 
+        // Operator button A, Shoot Sequence
         new JoystickButton(operatorController, Button.kA.value).whenPressed(
                 new ShootSequence(drivetrain, shooter, limelight, hopper));
-
+        // Operator button Y, toggle shooter
+        new JoystickButton(operatorController, Button.kY.value)
+                .toggleWhenPressed(new RunShooterLockedSpeed(shooter, limelight));
         // // Operator D-Pad North, turn to goal
         new POVButton(operatorController, 0)
                 .whenPressed(new TurnToGoal(drivetrain, limelight));
         // Operator D-Pad South, turn to ball
         new POVButton(operatorController, 180)
                 .whenPressed(new TurnToBall(drivetrain, astra));
+        // Operator D-Pad West, limelight off
+        new POVButton(operatorController, 90)
+                .whenPressed(new InstantCommand(limelight::setDriverAssistMode));
+        // Operator D-Pad East, limelight on
+        new POVButton(operatorController, 270)
+                .whenPressed(new InstantCommand(limelight::setVisionMode));
     }
 
     private void configureAuton() {
         TrajectoryLoader.addSettings(
                 new TrajectorySettings("2Ball1").withMaxVelocity(2),
-                new TrajectorySettings("5Ball.ToGoal").withReversed(true));
+                new TrajectorySettings("2Ball2").withMaxVelocity(2),
+                new TrajectorySettings("2Ball3").withMaxVelocity(2),
+                new TrajectorySettings("3Ball1").withMaxVelocity(2),
+                new TrajectorySettings("4Ball.To2").withMaxVelocity(2),
+                new TrajectorySettings("4Ball.To3and4").withMaxVelocity(2),
+                new TrajectorySettings("4Ball.ToGoal").withMaxVelocity(2).withReversed(true),
+                new TrajectorySettings("5Ball.To2and3").withMaxVelocity(4).withMaxAcceleration(3),
+                new TrajectorySettings("5Ball.To4and5").withMaxVelocity(4).withMaxAcceleration(3),
+                new TrajectorySettings("5Ball.ToGoal").withMaxVelocity(4).withMaxAcceleration(3)
+                        .withReversed(true));
         TrajectoryLoader.loadAutoPaths();
 
         AutoManager.getInstance().addRoutine(new AutoRoutine("Two Ball: Left",
