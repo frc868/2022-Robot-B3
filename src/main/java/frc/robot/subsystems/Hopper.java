@@ -41,14 +41,14 @@ public class Hopper extends SubsystemBase {
     /**
      * Sets the gatekeepers to the "in" position (non-blocking).
      */
-    public void gatekeepersIn() {
+    public void gatekeepersOpen() {
         gatekeepers.set(DoubleSolenoid.Value.kForward);
     }
 
     /**
      * Sets the gatekeepers to the "out" position (blocking).
      */
-    public void gatekeepersOut() {
+    public void gatekeepersClosed() {
         gatekeepers.set(DoubleSolenoid.Value.kReverse);
     }
 
