@@ -144,4 +144,13 @@ public class Climber extends SubsystemBase {
     public void retractSecondStage() {
         climberSecondStage.set(Value.kReverse);
     }
+
+    /**
+     * Get the state of the 2nd stage of the climber.
+     * 
+     * @return true if it is extended, false if not
+     */
+    public boolean getSecondStage() {
+        return climberSecondStage.get() == Value.kForward;
+    }
 }
