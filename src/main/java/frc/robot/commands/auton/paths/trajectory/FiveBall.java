@@ -41,7 +41,7 @@ public class FiveBall extends SequentialCommandGroup implements AutoTrajectoryCo
                         new StartEndCommand(intake::runMotor, intake::stopMotor, intake)), // drive and intake 4th and
                                                                                            // 5th ball
                 new ParallelRaceGroup(
-                        new WaitCommand(3),
+                        new WaitCommand(1.5),
                         new StartEndCommand(intake::runMotor, intake::stopMotor, intake)), // wait for human player to
                                                                                            // give 5th ball
                 new DrivetrainTrajectoryCommand(autoPaths.get(2).getTrajectory(), drivetrain),
