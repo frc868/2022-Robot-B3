@@ -23,7 +23,7 @@ public class TurnToGoal extends PIDCommand {
                 drivetrain, limelight);
 
         this.drivetrain = drivetrain;
-        getController().setTolerance(0.5);
+        getController().setTolerance(3);
     }
 
     @Override
