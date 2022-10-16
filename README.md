@@ -2,4 +2,4 @@
 
 [![CI](https://github.com/frc868/2022-CommandBased/actions/workflows/main.yml/badge.svg)](https://github.com/frc868/2022-CommandBased/actions/workflows/main.yml)
 
-This is (untested) command based code for the 2022-Robot! Has some fun features like an attempt at trajectory tracking, a new logging system, and a potentially working 5 ball auton. Feel free to peruse this code as you'd like! Do note that some values/constants are set to zero, this is on purpose since nothing is actually tuned or tested.
+This is command based code for the 2022-Robot! Has some fun features like trajectory tracking/motion profiling, a new logging system, and a working five ball autonomous. This was used at Boiler Bot Battle, and features [frc868/houndutil](https://github.com/frc868/houndutil) as a major component.
