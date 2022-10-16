@@ -133,13 +133,15 @@ public class RobotContainer {
 
         // Driver sticks, tank drive
         drivetrain.setDefaultCommand(
-                new DefaultDrive(drivetrain, driverController::getLeftY, driverController::getRightY));
+                new DefaultDrive(drivetrain, () -> xLimiter.calculate(driverController.getLeftY()),
+                        () -> yLimiter.calculate(driverController.getRightY())));
 
         // Operator sticks, climber 1st stage
         climber.setDefaultCommand(
                 new RunCommand(() -> {
                     climber.setSpeedLeft(operatorController.getLeftY());
-                    climber.setSpeedRight(operatorController.getRightY());
+                    climber.setSpeedRight(-operatorController.getRightY());
+                    // climber.setSpeedRight(operatorController.getRightY());
                 }, climber));
 
         // Driver button A, intake down
@@ -147,13 +149,6 @@ public class RobotContainer {
                 .whenPressed(new InstantCommand(intake::setDown, intake));
         // Driver button Y, intake up
         new JoystickButton(driverController, Button.kY.value)
-                .whenPressed(new InstantCommand(intake::setUp, intake));
-
-        // Secondary Control: Driver button RB, intake down
-        new JoystickButton(driverController, Button.kRightBumper.value)
-                .whenPressed(new InstantCommand(intake::setDown, intake));
-        // Secondary Control: Driver button LB, intake up
-        new JoystickButton(driverController, Button.kLeftBumper.value)
                 .whenPressed(new InstantCommand(intake::setUp, intake));
 
         // Driver button B, climber locks extend
@@ -177,6 +172,19 @@ public class RobotContainer {
                                 new InstantCommand(climber::retractSecondStage),
                                 new InstantCommand(climber::extendSecondStage),
                                 climber::getSecondStage));
+
+        // Operator button RB, index in, run hopper and intake while held
+        new JoystickButton(driverController, Button.kRightBumper.value)
+                .whenHeld(
+                        new ParallelCommandGroup(
+                                new StartEndCommand(hopper::runMotor, hopper::stopMotor, hopper),
+                                new StartEndCommand(intake::runMotor, intake::stopMotor, intake)));
+        // Operator button LB, index out, run hopper and intake in reverse while held
+        new JoystickButton(driverController, Button.kLeftBumper.value)
+                .whenHeld(
+                        new ParallelCommandGroup(
+                                new StartEndCommand(hopper::reverseMotor, hopper::stopMotor, hopper),
+                                new StartEndCommand(intake::reverseMotor, intake::stopMotor, intake)));
 
         // Operator button RB, index in, run hopper and intake while held
         new JoystickButton(operatorController, Button.kRightBumper.value)
@@ -224,12 +232,13 @@ public class RobotContainer {
                 new TrajectorySettings("2Ball2").withMaxVelocity(2),
                 new TrajectorySettings("2Ball3").withMaxVelocity(2),
                 new TrajectorySettings("3Ball1").withMaxVelocity(2),
-                new TrajectorySettings("4Ball.To2").withMaxVelocity(2),
-                new TrajectorySettings("4Ball.To3and4").withMaxVelocity(2),
+                new TrajectorySettings("4Ball.To2").withMaxVelocity(2.5),
+                new TrajectorySettings("4Ball.To3and4").withMaxVelocity(3.5),
                 new TrajectorySettings("4Ball.ToGoal").withMaxVelocity(2).withReversed(true),
-                new TrajectorySettings("5Ball.To2and3").withMaxVelocity(4).withMaxAcceleration(3),
-                new TrajectorySettings("5Ball.To4and5").withMaxVelocity(4).withMaxAcceleration(3),
-                new TrajectorySettings("5Ball.ToGoal").withMaxVelocity(4).withMaxAcceleration(3)
+                new TrajectorySettings("5Ball.To1").withMaxVelocity(4.5).withMaxAcceleration(1.5),
+                new TrajectorySettings("5Ball.To2and3").withMaxVelocity(4.5).withMaxAcceleration(2.0),
+                new TrajectorySettings("5Ball.To4and5").withMaxVelocity(4.5).withMaxAcceleration(2.0),
+                new TrajectorySettings("5Ball.ToGoal").withMaxVelocity(4.5).withMaxAcceleration(2.0)
                         .withReversed(true));
         TrajectoryLoader.loadAutoPaths();
 
@@ -252,7 +261,9 @@ public class RobotContainer {
 
         AutoManager.getInstance()
                 .addRoutine(new AutoRoutine("Five Ball",
-                        new FiveBall(TrajectoryLoader.getAutoPaths("5Ball.To2and3", "5Ball.To4and5", "5Ball.ToGoal"),
+                        new FiveBall(
+                                TrajectoryLoader.getAutoPaths("5Ball.To1", "5Ball.To2and3", "5Ball.To4and5",
+                                        "5Ball.ToGoal"),
                                 drivetrain, shooter, intake, hopper, limelight, astra)));
 
         AutoManager.getInstance().addRoutine(

@@ -6,6 +6,7 @@ import com.techhounds.houndutil.houndlib.auto.AutoPath;
 import com.techhounds.houndutil.houndlib.auto.AutoTrajectoryCommand;
 
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
@@ -27,7 +28,9 @@ public class TwoBall extends SequentialCommandGroup implements AutoTrajectoryCom
                 new InstantCommand(intake::setDown, intake),
                 new ParallelRaceGroup(
                         new DrivetrainTrajectoryCommand(autoPaths.get(0).getTrajectory(), drivetrain),
-                        new StartEndCommand(intake::runMotor, intake::stopMotor, intake)),
+                        new ParallelCommandGroup(
+                                new StartEndCommand(hopper::runMotor, hopper::stopMotor, hopper),
+                                new StartEndCommand(intake::runMotor, intake::stopMotor, intake))),
                 new ShootSequence(drivetrain, shooter, limelight, hopper),
                 new InstantCommand(intake::setUp, intake));
     }

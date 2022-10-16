@@ -64,7 +64,7 @@ public class Drivetrain extends SubsystemBase {
         rightSecondaryMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
 
         drive = new DifferentialDrive(leftMotors, rightMotors);
-        drive.setMaxOutput(0.8);
+        drive.setMaxOutput(0.9);
         odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getGyroAngle()));
         AutoManager.getInstance().setResetOdometryConsumer(this::resetOdometry);
 

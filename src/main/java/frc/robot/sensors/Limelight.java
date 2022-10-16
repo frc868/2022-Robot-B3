@@ -3,6 +3,7 @@ package frc.robot.sensors;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.NetworkButton;
@@ -33,6 +34,11 @@ public class Limelight extends SubsystemBase {
                 return true;
             }
         });
+    }
+
+    @Override
+    public void periodic() {
+        SmartDashboard.putNumber("Limelight Speed", calcShooterSpeed());
     }
 
     /**
@@ -99,7 +105,7 @@ public class Limelight extends SubsystemBase {
     public double calcShooterSpeed() {
         double distance = this.getDistance();
         double calcSpeed = 5017 + (-735 * distance) + (76.8 * Math.pow(distance, 2)) + (-2.4 * Math.pow(distance, 3));
-        return calcSpeed / 60.0; // switching from RPMs to rot/s
+        return calcSpeed / 60.0 + 4.3; // switching from RPMs to rot/s
     }
 
     /**
