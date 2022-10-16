@@ -39,7 +39,7 @@ public class FourBall extends SequentialCommandGroup implements AutoTrajectoryCo
                                 new StartEndCommand(hopper::runMotor, hopper::stopMotor, hopper),
                                 new StartEndCommand(intake::runMotor, intake::stopMotor, intake))),
                 new ParallelRaceGroup(
-                        new WaitCommand(3),
+                        new WaitCommand(1.5),
                         new ParallelCommandGroup(
                                 new StartEndCommand(hopper::runMotor, hopper::stopMotor, hopper),
                                 new StartEndCommand(intake::runMotor, intake::stopMotor, intake))),
