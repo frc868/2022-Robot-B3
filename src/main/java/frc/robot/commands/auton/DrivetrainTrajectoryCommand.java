@@ -35,10 +35,4 @@ public class DrivetrainTrajectoryCommand extends RamseteCommand {
         this.drivetrain = drivetrain;
         addRequirements(drivetrain);
     }
-
-    @Override
-    public void initialize() {
-        drivetrain.resetOdometry(trajectory.getInitialPose());
-        super.initialize();
-    }
 }
